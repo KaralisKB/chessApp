@@ -1,0 +1,80 @@
+package com.example.chess.model
+
+
+class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece {
+    override val type: PieceType = PieceType.PAWN
+    override var position: Position = startPosition
+    override var isCaptured: Boolean = false
+    override var movesMade: Int = 0
+
+    override fun getPossibleMoves(boardState: BoardState): Pair<List<Position>?, List<Position>?> {
+        val possibleMoves: Pair<MutableList<Position>?, MutableList<Position>?> =
+            Pair(mutableListOf(), mutableListOf())
+
+        val potentialMoves = getPotentialMoves(boardState)
+
+        for (move in potentialMoves) {
+            val isValid = isMoveValid(move, boardState)
+            if (isValid == 1) {
+                possibleMoves.first?.add(Position(move.first, move.second))
+            } else if (isValid == 2) {
+                possibleMoves.second?.add(Position(move.first, move.second))
+            }
+        }
+        println("Possible Moves: ${possibleMoves.first}, Possible Attacks: ${possibleMoves.second}")
+        return possibleMoves
+    }
+
+    override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
+        val potentialMoves = mutableListOf<Pair<Int, Int>>()
+        val direction = if (color == PieceColor.WHITE) 1 else -1
+
+        // Forward moves
+        potentialMoves.add(Pair(position.row + direction, position.col))
+        if (movesMade == 0) {
+            potentialMoves.add(Pair(position.row + 2 * direction, position.col))
+        }
+
+        // Diagonal attacks
+        potentialMoves.add(Pair(position.row + direction, position.col + 1))
+        potentialMoves.add(Pair(position.row + direction, position.col - 1))
+
+        return potentialMoves
+    }
+
+    // 0: invalid, 1: valid move, 2: valid attack
+    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+        val row = to.first
+        val col = to.second
+
+        if (row < 0 || row > 7 || col < 0 || col > 7) {
+            return 0
+        }
+
+        val targetPiece = boardState.board[row][col]
+
+        val direction = if (color == PieceColor.WHITE) 1 else -1
+
+        if (to.second == position.col) {
+            if (targetPiece == null) {
+                if (to.first == position.row + direction) {
+                    return 1
+                } else if (movesMade == 0 && to.first == position.row + 2 * direction) {
+
+                    val intermediateRow = position.row + direction
+                    if (boardState.board[intermediateRow][col] == null) {
+                        return 1
+                    }
+                }
+            }
+            return 0
+        } else {
+            if (targetPiece!= null && targetPiece.color!= color) {
+                if (to.first == position.row + direction && (to.second == position.col + 1 || to.second == position.col - 1)) {
+                    return 2
+                }
+            }
+            return 0
+        }
+    }
+}
