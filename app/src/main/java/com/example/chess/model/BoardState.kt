@@ -22,7 +22,7 @@ class BoardState {
         board[7][2] = Bishop(PieceColor.BLACK, Position(7, 2))
         board[7][3] = Queen(PieceColor.BLACK, Position(7, 3))
         board[7][4] = King(PieceColor.BLACK, Position(7, 4))
-        board[7][5] = Bishop(PieceColor.BLACK, Position(7, 5))
+        board[3][1] = Bishop(PieceColor.BLACK, Position(3, 1))
         board[4][3] = Knight(PieceColor.BLACK, Position(4, 3))
         board[5][2] = Rook(PieceColor.BLACK, Position(5, 2))
 

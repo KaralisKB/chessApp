@@ -38,11 +38,47 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
         return possibleMoves
     }
 
-    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
-
-    }
-
     override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
-        TODO("Not yet implemented")
+        val potentialMoves = mutableListOf<Pair<Int, Int>>()
+
+        for (direction in 1..4) {
+            when (direction) {
+                1 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row + square, position.col + square))
+                }
+                2 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row - square, position.col + square))
+                }
+                3 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row - square, position.col - square))
+                }
+                4 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row + square, position.col - square))
+                }
+            }
+        }
+        return potentialMoves
     }
+
+    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+        val row = to.first
+        val col = to.second
+
+        if (row < 0 || row > 7 || col < 0 || col > 7) {
+            return 0
+        }
+
+        val targetPiece = boardState.board[row][col]
+
+        if (targetPiece != null) {
+            if (targetPiece.color != color) {
+                return 2
+            }
+        } else {
+            return 1
+        }
+        return 0
+    }
+
+
 }
