@@ -6,21 +6,19 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
 
-    override fun getPossibleMoves(boardState: BoardState): Pair<List<Position>?, List<Position>?> {
-        val possibleMoves: Pair<MutableList<Position>?, MutableList<Position>?> =
-            Pair(mutableListOf(), mutableListOf())
+    override fun getPossibleMoves(boardState: BoardState): List<Position> {
+        val possibleMoves: MutableList<Position> = mutableListOf()
 
         val potentialMoves = getPotentialMoves(boardState)
 
         for (move in potentialMoves) {
             val isValid = isMoveValid(move, boardState)
             if (isValid == 1) {
-                possibleMoves.first?.add(Position(move.first, move.second))
+                possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
             } else if (isValid == 2) {
-                possibleMoves.second?.add(Position(move.first, move.second))
+                possibleMoves.add(Position(move.first, move.second, FieldState.ATTACK))
             }
         }
-        println("Possible Moves: ${possibleMoves.first}, Possible Attacks: ${possibleMoves.second}")
         return possibleMoves
     }
 

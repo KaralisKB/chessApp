@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,7 +30,6 @@ import com.example.chess.R
 fun Board(state: BoardState) {
     var selectedPiece by rememberSaveable { mutableStateOf<ChessPiece?>(null) }
     var possibleMoves by rememberSaveable { mutableStateOf<List<Position>?>(null) }
-    var possibleAttacks by rememberSaveable { mutableStateOf<List<Position>?>(null) }
 
     fun handleSquareClick(row: Int, col: Int) {
         val clickedPiece = state.board[row][col]
@@ -41,14 +38,8 @@ fun Board(state: BoardState) {
         } else {
             null
         }
-        possibleMoves = selectedPiece?.getPossibleMoves(state)?.first
-        possibleAttacks = selectedPiece?.getPossibleMoves(state)?.second
+        possibleMoves = selectedPiece?.getPossibleMoves(state)
 
-    }
-
-    selectedPiece?.let {
-        possibleMoves = selectedPiece?.getPossibleMoves(state)?.first
-        possibleAttacks = selectedPiece?.getPossibleMoves(state)?.second
     }
 
     Box(
@@ -67,8 +58,7 @@ fun Board(state: BoardState) {
                             state,
                             selectedPiece,
                             onSquareClick = { handleSquareClick(row, col)},
-                            possibleMoves,
-                            possibleAttacks
+                            possibleMoves
                         )
                     }
                 }
@@ -92,8 +82,7 @@ fun GridItem(
     boardState: BoardState,
     highlightedPiece: ChessPiece?,
     onSquareClick: () -> Unit,
-    possibleMoves: List<Position>?,
-    possibleAttacks: List<Position>?
+    possibleMoves: List<Position>?
 ) {
     var piece = boardState.board[row][column]
     Box(
@@ -101,8 +90,9 @@ fun GridItem(
             .size(40.dp)
             .background(
                 if (piece != null && piece == highlightedPiece) Color.DarkGray
-                else if (possibleAttacks != null && possibleAttacks.contains( Position(row, column))) Color.Yellow
-                else if (possibleMoves != null && possibleMoves.contains(Position(row, column))) Color.Green
+                else if (possibleMoves != null && possibleMoves.contains( Position(row, column, FieldState.VALID))) Color.Green
+                else if (possibleMoves != null && possibleMoves.contains(Position(row, column, FieldState.ATTACK))) Color.Yellow
+                else if (possibleMoves != null && possibleMoves.contains( Position(row, column, FieldState.BLOCKED))) Color.Red
                 else if ((row + column) % 2 == 0) Color.LightGray
                 else Color.White
             )
