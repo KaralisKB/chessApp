@@ -13,7 +13,7 @@ interface ChessPiece {
     val color: PieceColor
     var position: Position
     var isCaptured: Boolean
-    fun getPossibleMoves(boardState: BoardState): List<Position>?
+    fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position>?
     fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>>
     fun isMoveValid(to: Pair<Int,Int>, boardState: BoardState): Int
     var movesMade: Int

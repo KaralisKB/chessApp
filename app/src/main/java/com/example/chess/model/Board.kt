@@ -38,7 +38,7 @@ fun Board(state: BoardState) {
         } else {
             null
         }
-        possibleMoves = selectedPiece?.getPossibleMoves(state)
+        possibleMoves = selectedPiece?.getPossibleMoves(state, null)
 
     }
 

@@ -1,14 +1,15 @@
 package com.example.chess.model
 
-class BoardState {
-    val board = Array(8) { Array<ChessPiece?>(8) {null } }
+data class BoardState(
+    val board: Array<Array<ChessPiece?>> = Array(8) { Array(8) {null } }
+){
 
     init {
         board[0][0] = Rook(PieceColor.WHITE, Position(0, 0, FieldState.EMPTY)) // A1
         board[0][1] = Knight(PieceColor.WHITE, Position(0, 1, FieldState.EMPTY)) // B1
         board[0][2] = Bishop(PieceColor.WHITE, Position(0, 2, FieldState.EMPTY))
         board[0][3] = Queen(PieceColor.WHITE, Position(0, 3, FieldState.EMPTY))
-        board[3][7] = King(PieceColor.WHITE, Position(3, 7, FieldState.EMPTY))
+        board[5][3] = King(PieceColor.WHITE, Position(5, 3, FieldState.EMPTY))
         board[0][5] = Bishop(PieceColor.WHITE, Position(0, 5, FieldState.EMPTY))
         board[0][6] = Knight(PieceColor.WHITE, Position(0, 6, FieldState.EMPTY))
         board[5][5] = Rook(PieceColor.WHITE, Position(5, 5, FieldState.EMPTY))
@@ -30,5 +31,18 @@ class BoardState {
             board[6][i] = Pawn(PieceColor.BLACK, Position(6, i, FieldState.EMPTY))
         }
 
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BoardState
+
+        return board.contentDeepEquals(other.board)
+    }
+
+    override fun hashCode(): Int {
+        return board.contentDeepHashCode()
     }
 }

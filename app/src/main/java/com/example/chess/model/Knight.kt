@@ -1,17 +1,22 @@
 package com.example.chess.model
 
+import com.example.chess.utils.ext.isValidMove
+
 class Knight(override val color: PieceColor, startPosition: Position) : ChessPiece {
     override val type: PieceType = PieceType.KNIGHT
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
 
-    override fun getPossibleMoves(boardState: BoardState): List<Position> {
+    override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position> {
+
+        // skipped position = remove pawn in the piece functions instead of recreating board
         val possibleMoves: MutableList<Position> = mutableListOf()
 
         val potentialMoves = getPotentialMoves(boardState)
 
         for (move in potentialMoves) {
+            if (skippedPosition != null && skippedPosition.isValidMove(move)) possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
             val isValid = isMoveValid(move, boardState)
             if (isValid == 1) {
                 possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
