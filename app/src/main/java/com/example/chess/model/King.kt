@@ -72,6 +72,27 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
                                     })
                                 )
                         val res = newAllEnemyMoves.any { position -> position.isValidMove(move) }
+                        for(piece in boardState.board.flatten().filterNotNull()) {
+                            val direction = if(piece.color == PieceColor.WHITE) 1 else -1
+                            if(piece.type == PieceType.PAWN && piece.color != color && (piece.position.col == position.col || piece.position.col == position.col + 1 || piece.position.col == position.col - 1)) {
+                                possibleMoves.add(
+                                    Position(
+                                        piece.position.row + direction,
+                                        piece.position.col,
+                                        FieldState.BLOCKED
+                                    )
+                                )
+                                if(piece.position.col != position.col){
+                                    possibleMoves.add(
+                                        Position(
+                                            piece.position.row + direction,
+                                            piece.position.col,
+                                            FieldState.BLOCKED
+                                        )
+                                    )
+                                }
+                            }
+                        }
 
                         Log.d("King check", "move: $move \nContains: $res\n\n")
                         if (res && movementType != 0)

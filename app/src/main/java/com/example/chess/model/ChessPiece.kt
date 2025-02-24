@@ -17,5 +17,5 @@ interface ChessPiece {
     fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>>
     fun isMoveValid(to: Pair<Int,Int>, boardState: BoardState): Int
     var movesMade: Int
-
+    // is highlighted flag
 }

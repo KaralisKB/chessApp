@@ -28,6 +28,7 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
                     val isValid = isMoveValid(move, boardState)
                     when {
                         skippedPosition != null && skippedPosition.isValidMove(move) -> {
+                            // rook doesent check square after enemy king (skipped position)
                             possibleMoves.add(Position(move, FieldState.VALID))
                             flag = true
                         }

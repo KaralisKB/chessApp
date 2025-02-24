@@ -1,29 +1,41 @@
 package com.example.chess.model
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chess.R
+import com.example.chess.utils.ext.getStateColor
 
 
 @Composable
@@ -33,44 +45,92 @@ fun Board(state: BoardState) {
 
     fun handleSquareClick(row: Int, col: Int) {
         val clickedPiece = state.board[row][col]
-        selectedPiece = if (clickedPiece != null) {
-            clickedPiece
-        } else {
-            null
-        }
+        selectedPiece = clickedPiece
         possibleMoves = selectedPiece?.getPossibleMoves(state, null)
 
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.LightGray)
     ) {
         Column(
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
+            verticalArrangement = Arrangement.Top
         ) {
-            for (row in 7 downTo 0) {
-                Row {
-                    BoardLabel(text = (row + 1).toString())
-                    for (col in 0..7) {
-                        GridItem(
-                            row,
-                            col,
-                            state,
-                            selectedPiece,
-                            onSquareClick = { handleSquareClick(row, col)},
-                            possibleMoves
+            ChessLottie(
+                modifier = Modifier
+                    .size(225.dp)
+                    .align(Alignment.CenterHorizontally),
+                id = R.raw.chess_knight,
+                1f
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(2f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    for (row in 7 downTo 0) {
+                        BoardLabel(
+                            modifier = Modifier.weight(1f),
+                            text = (row + 1).toString()
                         )
                     }
                 }
-            }
-            Row(
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Spacer(modifier = Modifier.size(20.dp))
-                for (col in 0..7) {
-                    BoardLabel(text = ('A' + col).toString())
+//                Spacer(modifier = Modifier.weight(1f))
+                Box(modifier = Modifier.border(1.dp, Color.Black)) {
+                    Column {
+                        for (row in 7 downTo 0) {
+                            Row {
+                                for (col in 0..7) {
+                                    GridItem(
+                                        row,
+                                        col,
+                                        state,
+                                        selectedPiece,
+                                        onSquareClick = { handleSquareClick(row, col) },
+                                        possibleMoves
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
+                Spacer(modifier = Modifier.weight(2f))
             }
+
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)) {
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(Modifier.weight(8f)) {
+                    for (col in 0..7) {
+                        BoardLabel(
+                            text = ('A' + col).toString(),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            ChessLottie(
+                modifier = Modifier
+                    .size(150.dp)
+                    .align(Alignment.CenterHorizontally),
+                id = R.raw.trophy,
+                1.5f
+            )
         }
     }
 }
@@ -85,34 +145,88 @@ fun GridItem(
     possibleMoves: List<Position>?
 ) {
     var piece = boardState.board[row][column]
+    val scale = remember { androidx.compose.animation.core.Animatable(1f) }
+
+    LaunchedEffect(highlightedPiece) {
+        if (piece == highlightedPiece) {
+            scale.animateTo(
+                targetValue = 1.2f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+            scale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+    }
     Box(
         modifier = Modifier
             .size(40.dp)
+//            .background(
+//                if (piece != null && piece == highlightedPiece) Color.DarkGray
+//                else if (possibleMoves != null && possibleMoves.contains(
+//                        Position(
+//                            row,
+//                            column,
+//                            FieldState.VALID
+//                        )
+//                    )
+//                ) Color.Green
+//                else if (possibleMoves != null && possibleMoves.contains(
+//                        Position(
+//                            row,
+//                            column,
+//                            FieldState.ATTACK
+//                        )
+//                    )
+//                ) Color.Yellow
+//                else if (possibleMoves != null && possibleMoves.contains(
+//                        Position(
+//                            row,
+//                            column,
+//                            FieldState.BLOCKED
+//                        )
+//                    )
+//                ) Color.Red
+//                else if ((row + column) % 2 == 0) Color.LightGray
+//                else Color.White
+//
+//
+//            )
             .background(
-                if (piece != null && piece == highlightedPiece) Color.DarkGray
-                else if (possibleMoves != null && possibleMoves.contains( Position(row, column, FieldState.VALID))) Color.Green
-                else if (possibleMoves != null && possibleMoves.contains(Position(row, column, FieldState.ATTACK))) Color.Yellow
-                else if (possibleMoves != null && possibleMoves.contains( Position(row, column, FieldState.BLOCKED))) Color.Red
-                else if ((row + column) % 2 == 0) Color.LightGray
-                else Color.White
+//                when {
+//                    //TODO: have this not be broken
+//                    piece != null && piece == highlightedPiece -> Color.DarkGray
+//                    piece != null && piece != highlightedPiece && possibleMoves != null && possibleMoves.contains(piece.position) -> piece.position.type.getStateColor() ?:
+//                    if ((row + column) % 2 == 0) Color.LightGray else Color.White
+//                    else -> if ((row + column) % 2 == 0) Color.LightGray else Color.White
+//                }
+
+                when {
+                    //TODO: have this not be broken p.2
+                    piece != null && piece == highlightedPiece -> Color.DarkGray
+                    possibleMoves != null && possibleMoves.any{it.row == row && it.col == column} -> Position(row, column, possibleMoves.first{ it.row == row && it.col == column }.type).type.getStateColor() ?:
+                    if ((row + column) % 2 == 0) Color.LightGray else Color.White
+                    else -> if ((row + column) % 2 == 0) Color.LightGray else Color.White
+                }
             )
             .clickable { onSquareClick() }
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+            }
     ) {
         if (piece != null) {
             Piece(piece)
         }
     }
 }
-
-@Composable
-fun backgroundBox() {
-    Box(
-        modifier = Modifier
-            .size(300.dp)
-            .background(Color.Gray)
-    )
-}
-
 
 @Composable
 fun Piece(piece: ChessPiece) {
@@ -142,13 +256,20 @@ fun Piece(piece: ChessPiece) {
 }
 
 @Composable
-fun BoardLabel(text: String) {
+fun BoardLabel(text: String, modifier: Modifier = Modifier) {
     Text(
+        textAlign = TextAlign.Center,
         text = text,
-        modifier = Modifier
-            .padding(4.dp)
-            .padding(horizontal = 7.dp)
-            .size(20.dp)
-            .wrapContentWidth(Alignment.CenterHorizontally)
+        modifier = modifier
+            .wrapContentHeight(Alignment.CenterVertically)
+            .fillMaxWidth()
     )
+}
+
+
+
+@Preview
+@Composable
+fun BoardPreview() {
+    Board(BoardState())
 }

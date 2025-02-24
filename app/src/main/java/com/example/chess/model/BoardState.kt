@@ -18,6 +18,7 @@ data class BoardState(
             board[1][i] = Pawn(PieceColor.WHITE, Position(1, i, FieldState.EMPTY))
         }
 
+
         board[7][0] = Rook(PieceColor.BLACK, Position(7, 0, FieldState.EMPTY)) // A1
         board[7][1] = Knight(PieceColor.BLACK, Position(7, 1, FieldState.EMPTY)) // B1
         board[7][2] = Bishop(PieceColor.BLACK, Position(7, 2, FieldState.EMPTY))
