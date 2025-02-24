@@ -28,7 +28,7 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
 
             subList.fold(mutableListOf<Position>()) { acc, move ->
                 if (!flag) {
-                    val isValid = isMoveValid(move, boardState)
+                    val isValid = getMovementType(move, boardState)
                     when {
                         skippedPosition != null && skippedPosition.isValidMove(move) -> {
                             possibleMoves.add(Position(move, FieldState.VALID))
@@ -74,7 +74,7 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
         return potentialMoves
     }
 
-    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+    override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
         val row = to.first
         val col = to.second
 

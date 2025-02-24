@@ -10,97 +10,73 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
     override var movesMade: Int = 0
 
     override fun getPossibleMoves(
-        boardState: BoardState,
-        skippedPosition: Position?
+        boardState: BoardState, skippedPosition: Position?
     ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
         val potentialMoves = getPotentialMoves(boardState)
-        var allEnemyMoves: MutableList<Position> = mutableListOf()
+        val filteredPositions = boardState.board.flatten()
+            .filterNotNull()
+
+        val allEnemyMoves = mutableSetOf<Position>()
+        boardState.board.asSequence()
+            .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
+            .fold(allEnemyMoves) { acc, move ->
+                if (move?.type == PieceType.PAWN) {
+                    val res = (move as Pawn).getAttackMoves(boardState)
+                    acc.addAll(res)
+                } else {
+                    val res = move?.getPossibleMoves(boardState, null) ?: emptyList()
+                    acc.addAll(res)
+                }
+                acc
+            }
 
         allEnemyMoves.addAll(
-            boardState
-                .board
-                .asSequence()
-                .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
-//                .map { it?.getPossibleMoves(boardState, null) }
-//                .filterNotNull()
-//                .flatten()
-//                .toList())
-                .fold(mutableListOf()) { acc, move ->
-                    if (move?.type == PieceType.PAWN) {
+            filteredPositions
+                .first { it.type == PieceType.KING && it.color != color }
+                .getPotentialMoves(boardState)
+                .map { Position(it.first, it.second, FieldState.ATTACK) }
+        )
 
-                        val res = (move as Pawn).getAttackMoves(boardState)
-                        acc.addAll(res)
-                    }
-                    else {
-                        val res = move?.getPossibleMoves(boardState, null) ?: emptyList()
-                        acc.addAll(res)
-                    }
-
-                    acc
-                }
-
-
-                )
+        filteredPositions.fold(allEnemyMoves) { acc, piece ->
+            if ( piece is Pawn && piece.color != color) acc.addAll(piece.getPotentialAttackMoves(boardState))
+            acc
+        }
 
         for (move in potentialMoves) {
-            val movementType = isMoveValid(move, boardState)
+            val movementType = getMovementType(move, boardState)
 
-            if (allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0)
-                possibleMoves.add(Position(move.first, move.second, FieldState.BLOCKED))
-
+            if (allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0) possibleMoves.add(
+                Position(move.first, move.second, FieldState.BLOCKED)
+            )
             else {
                 when (movementType) {
                     1 -> possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
-//                    2 -> possibleMoves.add(Position(move.first, move.second, FieldState.ATTACK))
                     2 -> {
-                        val newAllEnemyMoves = (
-                                boardState
-                                    .board
-                                    .asSequence()
-                                    .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
-                                    .map {
-                                        if (it?.type != PieceType.KING) it?.getPossibleMoves(
-                                            boardState,
-                                            Position(move, FieldState.EMPTY)
-                                        ) else emptyList()
-                                    }
-                                    .toList()
-                                    .fold(mutableListOf<Position>(), { acc, list ->
-                                        if (list != null) acc.addAll(list)
-                                        acc
-                                    })
-                                )
-                        val res = newAllEnemyMoves.any { position -> position.isValidMove(move) }
-                        for(piece in boardState.board.flatten().filterNotNull()) {
-                            val direction = if(piece.color == PieceColor.WHITE) 1 else -1
-                            if(piece.type == PieceType.PAWN && piece.color != color && (piece.position.col == position.col || piece.position.col == position.col + 1 || piece.position.col == position.col - 1)) {
-                                possibleMoves.add(
-                                    Position(
-                                        piece.position.row + direction,
-                                        piece.position.col,
-                                        FieldState.BLOCKED
-                                    )
-                                )
-                                if(piece.position.col != position.col){
-                                    possibleMoves.add(
-                                        Position(
-                                            piece.position.row + direction,
-                                            piece.position.col,
-                                            FieldState.BLOCKED
-                                        )
-                                    )
-                                }
+                        val newAllEnemyMoves = (boardState.board.asSequence()
+                            .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
+                            .map {
+                                if (it?.type != PieceType.KING) it?.getPossibleMoves(
+                                    boardState, Position(move, FieldState.EMPTY)
+                                ) else emptyList()
                             }
-                        }
+                            .toList()
+                            .fold(mutableListOf<Position>(), { acc, list ->
+                                if (list != null) acc.addAll(list)
+                                acc
+                            }))
+                        val res = newAllEnemyMoves.any { position -> position.isValidMove(move) }
+
 
                         Log.d("King check", "move: $move \nContains: $res\n\n")
-                        if (res && movementType != 0)
-                            possibleMoves.add(Position(move.first, move.second, FieldState.BLOCKED))
-                        else possibleMoves.add(Position(move.first, move.second, FieldState.ATTACK))
-
+                        possibleMoves.add(
+                            Position(
+                                move.first,
+                                move.second,
+                                if (res && movementType != 0) FieldState.BLOCKED else FieldState.ATTACK
+                            )
+                        )
                     }
-
                     0 -> possibleMoves.add(Position(move.first, move.second, FieldState.EMPTY))
                 }
             }
@@ -126,7 +102,25 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
         return potentialMoves
     }
 
-    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+    fun getPotentialAttackMoves(boardState: BoardState) {
+        val potentialAttackMoves = mutableListOf<Position>()
+
+        potentialAttackMoves.addAll(
+            listOf(
+                Position(position.row + 1, position.col, FieldState.ATTACK),
+                Position(position.row + 1, position.col + 1, FieldState.ATTACK),
+                Position(position.row, position.col + 1, FieldState.ATTACK),
+                Position(position.row - 1, position.col + 1, FieldState.ATTACK),
+                Position(position.row - 1, position.col, FieldState.ATTACK),
+                Position(position.row - 1, position.col - 1, FieldState.ATTACK),
+                Position(position.row, position.col - 1, FieldState.ATTACK),
+                Position(position.row + 1, position.col - 1, FieldState.ATTACK)
+            )
+        )
+
+    }
+
+    override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
         val row = to.first
         val col = to.second
 

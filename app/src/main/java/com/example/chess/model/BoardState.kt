@@ -3,6 +3,8 @@ package com.example.chess.model
 data class BoardState(
     val board: Array<Array<ChessPiece?>> = Array(8) { Array(8) {null } }
 ){
+    val killedWhitePieces = mutableListOf<ChessPiece>()
+    val killedBlackPieces = mutableListOf<ChessPiece>()
 
     init {
         board[0][0] = Rook(PieceColor.WHITE, Position(0, 0, FieldState.EMPTY)) // A1
@@ -34,16 +36,18 @@ data class BoardState(
 
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as BoardState
-
-        return board.contentDeepEquals(other.board)
+    fun move(piece: ChessPiece, to: Position) {
+        board[to.row][to.col] = piece
+        board[piece.position.row][piece.position.col] = null
+        piece.position = to
+        piece.movesMade++
     }
 
-    override fun hashCode(): Int {
-        return board.contentDeepHashCode()
+    private fun attack() {
+
+    }
+
+    private fun changePosition() {
+
     }
 }

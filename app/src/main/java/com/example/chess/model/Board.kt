@@ -39,15 +39,21 @@ import com.example.chess.utils.ext.getStateColor
 
 
 @Composable
-fun Board(state: BoardState) {
+fun Board(initialState: BoardState) {
+    var state by remember { mutableStateOf(initialState) }
     var selectedPiece by rememberSaveable { mutableStateOf<ChessPiece?>(null) }
     var possibleMoves by rememberSaveable { mutableStateOf<List<Position>?>(null) }
 
     fun handleSquareClick(row: Int, col: Int) {
         val clickedPiece = state.board[row][col]
-        selectedPiece = clickedPiece
-        possibleMoves = selectedPiece?.getPossibleMoves(state, null)
 
+        if (selectedPiece != null && clickedPiece == null && possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true) {
+            state.move(selectedPiece!!, Position(row, col, FieldState.VALID))
+            possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+        } else {
+            selectedPiece = clickedPiece
+            possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+        }
     }
 
     Box(
@@ -168,46 +174,7 @@ fun GridItem(
     Box(
         modifier = Modifier
             .size(40.dp)
-//            .background(
-//                if (piece != null && piece == highlightedPiece) Color.DarkGray
-//                else if (possibleMoves != null && possibleMoves.contains(
-//                        Position(
-//                            row,
-//                            column,
-//                            FieldState.VALID
-//                        )
-//                    )
-//                ) Color.Green
-//                else if (possibleMoves != null && possibleMoves.contains(
-//                        Position(
-//                            row,
-//                            column,
-//                            FieldState.ATTACK
-//                        )
-//                    )
-//                ) Color.Yellow
-//                else if (possibleMoves != null && possibleMoves.contains(
-//                        Position(
-//                            row,
-//                            column,
-//                            FieldState.BLOCKED
-//                        )
-//                    )
-//                ) Color.Red
-//                else if ((row + column) % 2 == 0) Color.LightGray
-//                else Color.White
-//
-//
-//            )
             .background(
-//                when {
-//                    //TODO: have this not be broken
-//                    piece != null && piece == highlightedPiece -> Color.DarkGray
-//                    piece != null && piece != highlightedPiece && possibleMoves != null && possibleMoves.contains(piece.position) -> piece.position.type.getStateColor() ?:
-//                    if ((row + column) % 2 == 0) Color.LightGray else Color.White
-//                    else -> if ((row + column) % 2 == 0) Color.LightGray else Color.White
-//                }
-
                 when {
                     //TODO: have this not be broken p.2
                     piece != null && piece == highlightedPiece -> Color.DarkGray

@@ -17,7 +17,7 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
 
         for (move in potentialMoves) {
             if (skippedPosition != null && skippedPosition.isValidMove(move)) possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
-            val isValid = isMoveValid(move, boardState)
+            val isValid = getMovementType(move, boardState)
             if (isValid == 1) {
                 possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
             } else if (isValid == 2) {
@@ -49,7 +49,7 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
         return potentialMoves
     }
 
-    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+    override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
         val row = to.first
         val col = to.second
 

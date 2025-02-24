@@ -25,7 +25,7 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
 
             subList.fold(mutableListOf<Position>()) { acc, move ->
                 if (!flag) {
-                    val isValid = isMoveValid(move, boardState)
+                    val isValid = getMovementType(move, boardState)
                     when {
                         skippedPosition != null && skippedPosition.isValidMove(move) -> {
                             // rook doesent check square after enemy king (skipped position)
@@ -73,7 +73,7 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
         return potentialMoves
     }
 
-    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+    override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
         val row = to.first
         val col = to.second
 

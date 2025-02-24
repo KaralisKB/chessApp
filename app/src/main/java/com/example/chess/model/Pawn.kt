@@ -13,7 +13,7 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
         val potentialMoves = getPotentialMoves(boardState)
 
         for (move in potentialMoves) {
-            val isValid = isMoveValid(move, boardState)
+            val isValid = getMovementType(move, boardState)
             if (isValid == 1) {
                 possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
             } else if (isValid == 2) {
@@ -40,8 +40,20 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
         return potentialMoves
     }
 
+    fun getPotentialAttackMoves(boardState: BoardState): List<Position> {
+        val potentialAttackMoves = mutableListOf<Position>()
+        val direction = if (color == PieceColor.WHITE) 1 else -1
+
+        potentialAttackMoves.add(Position(position.row + direction, position.col + 1, FieldState.ATTACK))
+        potentialAttackMoves.add(Position(position.row + direction, position.col - 1, FieldState.ATTACK))
+
+
+
+        return potentialAttackMoves
+    }
+
     // 0: invalid, 1: valid move, 2: valid attack
-    override fun isMoveValid(to: Pair<Int, Int>, boardState: BoardState): Int {
+    override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
         val row = to.first
         val col = to.second
 
@@ -78,7 +90,7 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
 
     fun getAttackMoves(boardState: BoardState): List<Position> = getPotentialMoves(boardState)
             .fold<Pair<Int, Int>, MutableSet<Position>>(mutableSetOf()) { acc, move ->
-                val isValid = isMoveValid(move, boardState)
+                val isValid = getMovementType(move, boardState)
                 if (isValid == 2) acc.add(Position(move, FieldState.ATTACK))
 
                 acc
