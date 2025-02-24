@@ -50,7 +50,12 @@ fun Board(initialState: BoardState) {
         if (selectedPiece != null && clickedPiece == null && possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true) {
             state.move(selectedPiece!!, Position(row, col, FieldState.VALID))
             possibleMoves = selectedPiece?.getPossibleMoves(state, null)
-        } else {
+        }
+        else if (selectedPiece != null && clickedPiece != null && possibleMoves?.contains(Position(row, col, FieldState.ATTACK)) == true) {
+            state.attack(selectedPiece!!,Position(row, col, FieldState.ATTACK))
+            possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+        }
+        else {
             selectedPiece = clickedPiece
             possibleMoves = selectedPiece?.getPossibleMoves(state, null)
         }
@@ -91,7 +96,6 @@ fun Board(initialState: BoardState) {
                         )
                     }
                 }
-//                Spacer(modifier = Modifier.weight(1f))
                 Box(modifier = Modifier.border(1.dp, Color.Black)) {
                     Column {
                         for (row in 7 downTo 0) {

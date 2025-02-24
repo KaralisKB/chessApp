@@ -3,8 +3,8 @@ package com.example.chess.model
 data class BoardState(
     val board: Array<Array<ChessPiece?>> = Array(8) { Array(8) {null } }
 ){
-    val killedWhitePieces = mutableListOf<ChessPiece>()
-    val killedBlackPieces = mutableListOf<ChessPiece>()
+    val killedWhitePieces = mutableListOf<ChessPiece?>()
+    val killedBlackPieces = mutableListOf<ChessPiece?>()
 
     init {
         board[0][0] = Rook(PieceColor.WHITE, Position(0, 0, FieldState.EMPTY)) // A1
@@ -43,8 +43,17 @@ data class BoardState(
         piece.movesMade++
     }
 
-    private fun attack() {
+    fun attack(piece: ChessPiece, to: Position) {
+        when (board[to.row][to.col] != null) {
+            (board[to.row][to.col]?.color == PieceColor.WHITE) -> killedWhitePieces.add(board[to.row][to.col])
+            (board[to.row][to.col]?.color == PieceColor.BLACK) -> killedBlackPieces.add(board[to.row][to.col])
+            else -> null
+        }
 
+        board[to.row][to.col] = piece
+        board[piece.position.row][piece.position.col] = null
+        piece.position = to
+        piece.movesMade++
     }
 
     private fun changePosition() {
