@@ -99,25 +99,23 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
                 Pair(position.row + 1, position.col - 1)
             )
         )
+
+        if(movesMade == 0 && color == PieceColor.WHITE){
+            if (boardState.board[0][6] == null && boardState.board[0][5] == null) {
+                    potentialMoves.add(Pair(0, 6))
+                }
+            if (boardState.board[0][1] == null && boardState.board[0][2] == null && boardState.board[0][3] == null) {
+                    potentialMoves.add(Pair(0, 2))
+                }
+        } else if (movesMade == 0 && color == PieceColor.BLACK) {
+            if (boardState.board[7][6] == null && boardState.board[7][5] == null) {
+                potentialMoves.add(Pair(7, 6))
+            }
+            if (boardState.board[7][1] == null && boardState.board[7][2] == null && boardState.board[7][3] == null) {
+                potentialMoves.add(Pair(7, 2))
+            }
+        }
         return potentialMoves
-    }
-
-    fun getPotentialAttackMoves(boardState: BoardState) {
-        val potentialAttackMoves = mutableListOf<Position>()
-
-        potentialAttackMoves.addAll(
-            listOf(
-                Position(position.row + 1, position.col, FieldState.ATTACK),
-                Position(position.row + 1, position.col + 1, FieldState.ATTACK),
-                Position(position.row, position.col + 1, FieldState.ATTACK),
-                Position(position.row - 1, position.col + 1, FieldState.ATTACK),
-                Position(position.row - 1, position.col, FieldState.ATTACK),
-                Position(position.row - 1, position.col - 1, FieldState.ATTACK),
-                Position(position.row, position.col - 1, FieldState.ATTACK),
-                Position(position.row + 1, position.col - 1, FieldState.ATTACK)
-            )
-        )
-
     }
 
     override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
@@ -135,6 +133,5 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
             targetPiece.color != color -> 2
             else -> 0
         }
-
     }
 }
