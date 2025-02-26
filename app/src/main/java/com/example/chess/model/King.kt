@@ -101,17 +101,17 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
         )
 
         if(movesMade == 0 && color == PieceColor.WHITE){
-            if (boardState.board[0][6] == null && boardState.board[0][5] == null) {
-                    potentialMoves.add(Pair(0, 6))
-                }
-            if (boardState.board[0][1] == null && boardState.board[0][2] == null && boardState.board[0][3] == null) {
-                    potentialMoves.add(Pair(0, 2))
-                }
+            if (boardState.board[0][6] == null && boardState.board[0][5] == null && castlePossible(this, boardState).second == true) {
+                potentialMoves.add(Pair(0, 6))
+            }
+            if (boardState.board[0][1] == null && boardState.board[0][2] == null && boardState.board[0][3] == null && castlePossible(this, boardState).first == true) {
+                potentialMoves.add(Pair(0, 2))
+            }
         } else if (movesMade == 0 && color == PieceColor.BLACK) {
-            if (boardState.board[7][6] == null && boardState.board[7][5] == null) {
+            if (boardState.board[7][6] == null && boardState.board[7][5] == null && castlePossible(this, boardState).second == true) {
                 potentialMoves.add(Pair(7, 6))
             }
-            if (boardState.board[7][1] == null && boardState.board[7][2] == null && boardState.board[7][3] == null) {
+            if (boardState.board[7][1] == null && boardState.board[7][2] == null && boardState.board[7][3] == null && castlePossible(this, boardState).first == true) {
                 potentialMoves.add(Pair(7, 2))
             }
         }
@@ -133,5 +133,22 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
             targetPiece.color != color -> 2
             else -> 0
         }
+    }
+
+    fun castlePossible(piece: ChessPiece, boardState: BoardState): Pair<Boolean, Boolean> {
+        var longCastleAvailable = false
+        var shortCastleAvailable = false
+        val board = boardState.board
+        when {
+            piece.color == PieceColor.WHITE -> {
+                if (board[0][0]?.movesMade == 0) longCastleAvailable = true
+                if (board[0][7]?.movesMade == 0) shortCastleAvailable = true
+            }
+            piece.color == PieceColor.BLACK -> {
+                if (board[7][0]?.movesMade == 0) longCastleAvailable = true
+                if (board[7][7]?.movesMade == 0) shortCastleAvailable = true
+            }
+        }
+        return Pair(longCastleAvailable, shortCastleAvailable)
     }
 }

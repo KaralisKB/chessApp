@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -38,6 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chess.R
+import com.example.chess.ui.components.ChessLazyHorizontalGrid
+import com.example.chess.ui.components.Piece
+import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
 
 
@@ -51,18 +57,18 @@ fun Board(initialState: BoardState) {
         val clickedPiece = state.board[row][col]
 
         if (selectedPiece != null && clickedPiece == null && possibleMoves?.contains(
-                Position(row, col, FieldState.VALID)) == true
+                Position(row, col, FieldState.VALID)
+            ) == true
         ) {
             state.move(selectedPiece!!, Position(row, col, FieldState.VALID))
             possibleMoves = selectedPiece?.getPossibleMoves(state, null)
-        }
-        else if (selectedPiece != null && clickedPiece != null && possibleMoves?.contains(
-                Position(row, col, FieldState.ATTACK)) == true
+        } else if (selectedPiece != null && clickedPiece != null && possibleMoves?.contains(
+                Position(row, col, FieldState.ATTACK)
+            ) == true
         ) {
             state.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
             possibleMoves = selectedPiece?.getPossibleMoves(state, null)
-        }
-        else {
+        } else {
             selectedPiece = clickedPiece
             possibleMoves = selectedPiece?.getPossibleMoves(state, null)
         }
@@ -86,7 +92,8 @@ fun Board(initialState: BoardState) {
                 id = R.raw.chess_knight,
                 1f
             )
-
+            Spacer(modifier = Modifier.height(20.dp))
+            ChessLazyHorizontalGrid(state.killedWhitePieces)
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier
@@ -140,6 +147,10 @@ fun Board(initialState: BoardState) {
 
                 Spacer(modifier = Modifier.weight(1f))
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+            ChessLazyHorizontalGrid(state.killedBlackPieces)
+
             Spacer(modifier = Modifier.height(20.dp))
             ChessLottie(
                 modifier = Modifier
@@ -185,10 +196,14 @@ fun GridItem(
         .background(when {
             piece != null && piece == highlightedPiece -> Color.DarkGray
             possibleMoves != null && possibleMoves.any { it.row == row && it.col == column } ->
-                Position(row, column, possibleMoves.first { it.row == row && it.col == column }
-                    .type).type.getStateColor() ?:
-                    if ((row + column) % 2 == 0) Color.LightGray else Color.White
-            else -> if ((row + column) % 2 == 0) Color.LightGray else Color.White
+                Position(
+                    row,
+                    column,
+                    possibleMoves.first { it.row == row && it.col == column }
+                        .type).type.getStateColor()
+                    ?: if ((row + column) % 2 == 0) Jade else Color.White
+
+            else -> if ((row + column) % 2 == 0) Jade else Color.White
         }
         )
         .clickable { onSquareClick() }
@@ -202,32 +217,7 @@ fun GridItem(
     }
 }
 
-@Composable
-fun Piece(piece: ChessPiece) {
-    val imageId = when (piece.type) {
-        PieceType.PAWN -> if (piece.color == PieceColor.WHITE) R.drawable.chess_plt60 else R.drawable.chess_pdt60
-        PieceType.KNIGHT -> if (piece.color == PieceColor.WHITE) R.drawable.chess_nlt60 else R.drawable.chess_ndt60
-        PieceType.BISHOP -> if (piece.color == PieceColor.WHITE) R.drawable.chess_blt60 else R.drawable.chess_bdt60
-        PieceType.ROOK -> if (piece.color == PieceColor.WHITE) R.drawable.chess_rlt60 else R.drawable.chess_rdt60
-        PieceType.QUEEN -> if (piece.color == PieceColor.WHITE) R.drawable.chess_qlt60 else R.drawable.chess_qdt60
-        PieceType.KING -> if (piece.color == PieceColor.WHITE) R.drawable.chess_klt60 else R.drawable.chess_kdt60
-        else -> null
-    }
 
-    if (imageId != null) {
-        Box {
-            Image(
-                painter = painterResource(id = imageId),
-                contentDescription = piece.type.toString(),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(38.dp)
-            )
-        }
-    } else {
-        Text("?", color = if (piece.color == PieceColor.WHITE) Color.White else Color.Black)
-    }
-}
 
 @Composable
 fun BoardLabel(text: String, modifier: Modifier = Modifier) {
