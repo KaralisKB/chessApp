@@ -16,6 +16,7 @@ interface ChessPiece {
     fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position>?
     fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>>
     fun getMovementType(to: Pair<Int,Int>, boardState: BoardState): Int
+    fun getImage(): Int
 
     var movesMade: Int
     // is highlighted flag

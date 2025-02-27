@@ -1,9 +1,15 @@
 package com.example.chess.model
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,9 +25,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -36,62 +39,114 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.example.chess.R
 import com.example.chess.ui.components.ChessLazyHorizontalGrid
 import com.example.chess.ui.components.Piece
+import com.example.chess.ui.components.PromotionBox
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
+import kotlinx.coroutines.delay
 
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Board(initialState: BoardState) {
-    var state by remember { mutableStateOf(initialState) }
+    val state by remember { mutableStateOf(initialState) }
     var selectedPiece by rememberSaveable { mutableStateOf<ChessPiece?>(null) }
     var possibleMoves by rememberSaveable { mutableStateOf<List<Position>?>(null) }
-
-    fun handleSquareClick(row: Int, col: Int) {
-        val clickedPiece = state.board[row][col]
-
-        if (selectedPiece != null && clickedPiece == null && possibleMoves?.contains(
-                Position(row, col, FieldState.VALID)
-            ) == true
-        ) {
-            state.move(selectedPiece!!, Position(row, col, FieldState.VALID))
-            possibleMoves = selectedPiece?.getPossibleMoves(state, null)
-        } else if (selectedPiece != null && clickedPiece != null && possibleMoves?.contains(
-                Position(row, col, FieldState.ATTACK)
-            ) == true
-        ) {
-            state.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
-            possibleMoves = selectedPiece?.getPossibleMoves(state, null)
-        } else {
-            selectedPiece = clickedPiece
-            possibleMoves = selectedPiece?.getPossibleMoves(state, null)
-        }
+    var isPromotionPossible by remember {mutableStateOf(false)}
+    var clickedSquare by remember {mutableStateOf<Position?>(null)}
+    val onPromotionGranted: () -> Unit = {
+        selectedPiece = null
+        possibleMoves = null
+        isPromotionPossible = false
     }
 
+    fun handleSquareClick(row: Int, col: Int) {
+        clickedSquare = Position(row, col, FieldState.EMPTY)
+        val clickedPiece = state.board[row][col]
+
+        if (selectedPiece?.type == PieceType.PAWN && selectedPiece?.movesMade!! >= 4  && (clickedSquare!!.row == 0 || clickedSquare!!.row == 7)){
+            if (selectedPiece?.color == PieceColor.WHITE && selectedPiece?.position?.row == 6){
+                isPromotionPossible = true
+            }else if (selectedPiece?.color == PieceColor.BLACK && selectedPiece?.position?.row == 1){
+                isPromotionPossible = true
+            }
+        } else {
+            if (selectedPiece != null &&
+                clickedPiece == null &&
+                possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true)
+            {
+                state.move(selectedPiece!!, Position(row, col, FieldState.VALID))
+                possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                isPromotionPossible = false
+            }
+            else if (selectedPiece != null &&
+                clickedPiece != null &&
+                possibleMoves?.contains(Position(row, col, FieldState.ATTACK)) == true
+            ) {
+                state.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
+                possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                isPromotionPossible = false
+            } else {
+                selectedPiece = clickedPiece
+                possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                isPromotionPossible = false
+            }
+        }
+    }
     Box(
         modifier = Modifier
+            .zIndex(1f)
             .fillMaxSize()
-            .background(color = Color.LightGray)
+            .background(color = Color.LightGray),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.Top
+
         ) {
-            ChessLottie(
-                modifier = Modifier
-                    .size(225.dp)
-                    .align(Alignment.CenterHorizontally),
-                id = R.raw.chess_knight,
-                1f
-            )
+
+                AnimatedVisibility(
+                    visible = isPromotionPossible,
+                    enter = slideInVertically(
+                        initialOffsetY = { fullHeight -> -fullHeight },
+                        animationSpec = tween(durationMillis = 1500)
+                    ) + fadeIn(animationSpec = tween(durationMillis = 1500)),
+                    exit = slideOutVertically(
+                        targetOffsetY = { fullHeight -> -fullHeight },
+                        animationSpec = tween(durationMillis = 500)
+                    ) + fadeOut(animationSpec = tween(durationMillis = 500))
+                ) {
+                    Box(modifier = Modifier.fillMaxSize().zIndex(0f).align(Alignment.CenterHorizontally), contentAlignment = Alignment.Center) {
+                        val promotionCandidate = if (selectedPiece != null) selectedPiece else Pawn(PieceColor.WHITE, Position(0,0,FieldState.EMPTY))
+                        PromotionBox(
+                            modifier = Modifier
+                                .padding(top = 25.dp),
+                            promotionCandidate!!,
+                            state,
+                            onAction = onPromotionGranted,
+                            position = promotionCandidate.position,
+                            isPromotionPossible
+                        )
+                    }
+            }
+            if(!isPromotionPossible) {
+                ChessLottie(
+                    modifier = Modifier
+                        .size(225.dp)
+                        .align(Alignment.CenterHorizontally),
+                    id = R.raw.chess_knight,
+                    1f
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
             ChessLazyHorizontalGrid(state.killedWhitePieces)
             Spacer(modifier = Modifier.height(20.dp))
@@ -229,6 +284,219 @@ fun BoardLabel(text: String, modifier: Modifier = Modifier) {
             .fillMaxWidth()
     )
 }
+
+
+//@Composable
+//fun PromotionDialogue(selectedPiece: ChessPiece, state: BoardState, onDismissRequest: () -> Unit) {
+//    val pieceImages = if(selectedPiece.color == PieceColor.WHITE) {
+//        listOf(R.drawable.chess_qlt60, R.drawable.chess_rlt60, R.drawable.chess_blt60, R.drawable.chess_nlt60)
+//    } else {
+//        listOf(R.drawable.chess_qdt60, R.drawable.chess_rdt60
+//        )
+//    }
+//    Dialog(onDismissRequest = {}){
+//        Card(
+//            modifier = Modifier
+//                .wrapContentHeight()
+//                .width(125.dp)
+//                .background(Color.Transparent)
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .background(transparentGray)
+//                    .padding(vertical = 25.dp)
+//                    .wrapContentHeight(),
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                Row(
+//                    modifier = Modifier
+//                        .background(transparentGray)
+//                        .fillMaxWidth()
+//                        .clickable { onDismissRequest()
+//                                   handlePromotion(state, selectedPiece, selectedPromotion = PieceType.QUEEN)},
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    Box {
+//                        val infiniteTransition = rememberInfiniteTransition()
+//                        val shake by infiniteTransition.animateFloat(
+//                            initialValue = 1f,
+//                            targetValue = 1.2f,
+//                            animationSpec = infiniteRepeatable(
+//                                animation = keyframes {
+//                                    durationMillis = 750
+//                                    1.1f at 500
+//                                },
+//                                repeatMode = RepeatMode.Restart
+//                            )
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_qlt60),
+//                            contentDescription = "Queen",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                                .alpha(0.5f)
+//                                .scale(shake)
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_qlt60),
+//                            contentDescription = "Queen",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                        )
+//                    }
+//                }
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clickable { onDismissRequest()
+//                            handlePromotion(state, selectedPiece, selectedPromotion = PieceType.ROOK)},
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    Box {
+//                        val infiniteTransition = rememberInfiniteTransition()
+//                        val shake by infiniteTransition.animateFloat(
+//                            initialValue = 1f,
+//                            targetValue = 1.2f,
+//                            animationSpec = infiniteRepeatable(
+//                                animation = keyframes {
+//                                    durationMillis = 750
+//                                    1.1f at 500
+//                                },
+//                                repeatMode = RepeatMode.Restart
+//                            )
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_rlt60),
+//                            contentDescription = "Rook",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                                .alpha(0.5f)
+//                                .scale(shake)
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_rlt60),
+//                            contentDescription = "Rook",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                        )
+//                    }
+//                }
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clickable { onDismissRequest()
+//                            handlePromotion(state, selectedPiece, selectedPromotion = PieceType.BISHOP)},
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    Box {
+//                        val infiniteTransition = rememberInfiniteTransition()
+//                        val shake by infiniteTransition.animateFloat(
+//                            initialValue = 1f,
+//                            targetValue = 1.2f,
+//                            animationSpec = infiniteRepeatable(
+//                                animation = keyframes {
+//                                    durationMillis = 750
+//                                    1.1f at 500
+//                                },
+//                                repeatMode = RepeatMode.Restart
+//                            )
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_blt60),
+//                            contentDescription = "Bishop",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                                .alpha(0.5f)
+//                                .scale( shake )
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_blt60),
+//                            contentDescription = "Bishop",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                        )
+//                    }
+//                }
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clickable { onDismissRequest()
+//                            handlePromotion(state, selectedPiece, selectedPromotion = PieceType.KNIGHT)},
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//                    Box {
+//                        val infiniteTransition = rememberInfiniteTransition()
+//                        val shake by infiniteTransition.animateFloat(
+//                            initialValue = 1f,
+//                            targetValue = 1.2f,
+//                            animationSpec = infiniteRepeatable(
+//                                animation = keyframes {
+//                                    durationMillis = 750
+//                                    1.1f at 500
+//                                },
+//                                repeatMode = RepeatMode.Restart
+//                            )
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_nlt60),
+//                            contentDescription = "Knight",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                                .alpha(0.5f)
+//                                .scale(shake)
+//                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.chess_nlt60),
+//                            contentDescription = "Knight",
+//                            modifier = Modifier
+//                                .align(Alignment.Center)
+//                                .size(80.dp)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+fun handlePromotion(state: BoardState, piece: ChessPiece, selectedPromotion: PieceType) {
+    val direction = if(piece.color == PieceColor.WHITE) +1 else -1
+    val board = state.board
+
+    when (selectedPromotion) {
+        PieceType.QUEEN -> {
+            board[piece.position.row + direction][piece.position.col] = Queen(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
+            board[piece.position.row][piece.position.col] = null
+        }
+        PieceType.ROOK -> {
+            board[piece.position.row + direction][piece.position.col] = Rook(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
+            board[piece.position.row][piece.position.col] = null
+        }
+        PieceType.BISHOP -> {
+            board[piece.position.row + direction][piece.position.col] = Bishop(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
+            board[piece.position.row][piece.position.col] = null
+        }
+        PieceType.KNIGHT -> {
+            board[piece.position.row + direction][piece.position.col] = Knight(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
+            board[piece.position.row][piece.position.col] = null
+        }
+        else -> null
+    }
+
+}
+
 
 
 @Preview

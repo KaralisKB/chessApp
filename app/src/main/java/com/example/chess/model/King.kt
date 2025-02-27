@@ -1,6 +1,7 @@
 package com.example.chess.model
 
 import android.util.Log
+import com.example.chess.R
 import com.example.chess.utils.ext.isValidMove
 
 class King(override val color: PieceColor, startPosition: Position) : ChessPiece {
@@ -150,5 +151,9 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
             }
         }
         return Pair(longCastleAvailable, shortCastleAvailable)
+    }
+
+    override fun getImage(): Int {
+        if (color == PieceColor.WHITE) return R.drawable.chess_klt60 else return R.drawable.chess_kdt60
     }
 }

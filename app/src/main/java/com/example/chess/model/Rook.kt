@@ -1,5 +1,6 @@
 package com.example.chess.model
 
+import com.example.chess.R
 import com.example.chess.utils.ext.isValidMove
 
 class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece {
@@ -91,6 +92,10 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
             return 1
         }
         return 0
+    }
+
+    override fun getImage(): Int {
+        if (color == PieceColor.WHITE) return R.drawable.chess_rlt60 else return R.drawable.chess_rdt60
     }
 
 }

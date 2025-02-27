@@ -1,5 +1,7 @@
 package com.example.chess.model
 
+import com.example.chess.R
+
 
 class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece {
     override val type: PieceType = PieceType.PAWN
@@ -96,4 +98,7 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
                 acc
             }.toList()
 
+    override fun getImage(): Int {
+        if (color == PieceColor.WHITE) return R.drawable.chess_plt60 else return R.drawable.chess_pdt60
+    }
 }
