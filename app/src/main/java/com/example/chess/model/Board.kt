@@ -49,7 +49,6 @@ import com.example.chess.ui.components.Piece
 import com.example.chess.ui.components.PromotionBox
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
-import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -227,7 +226,7 @@ fun GridItem(
     onSquareClick: () -> Unit,
     possibleMoves: List<Position>?
 ) {
-    var piece = boardState.board[row][column]
+    val piece = boardState.board[row][column]
     val scale = remember { Animatable(1f) }
 
     LaunchedEffect(highlightedPiece) {
@@ -272,8 +271,6 @@ fun GridItem(
     }
 }
 
-
-
 @Composable
 fun BoardLabel(text: String, modifier: Modifier = Modifier) {
     Text(
@@ -284,220 +281,6 @@ fun BoardLabel(text: String, modifier: Modifier = Modifier) {
             .fillMaxWidth()
     )
 }
-
-
-//@Composable
-//fun PromotionDialogue(selectedPiece: ChessPiece, state: BoardState, onDismissRequest: () -> Unit) {
-//    val pieceImages = if(selectedPiece.color == PieceColor.WHITE) {
-//        listOf(R.drawable.chess_qlt60, R.drawable.chess_rlt60, R.drawable.chess_blt60, R.drawable.chess_nlt60)
-//    } else {
-//        listOf(R.drawable.chess_qdt60, R.drawable.chess_rdt60
-//        )
-//    }
-//    Dialog(onDismissRequest = {}){
-//        Card(
-//            modifier = Modifier
-//                .wrapContentHeight()
-//                .width(125.dp)
-//                .background(Color.Transparent)
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .background(transparentGray)
-//                    .padding(vertical = 25.dp)
-//                    .wrapContentHeight(),
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                Row(
-//                    modifier = Modifier
-//                        .background(transparentGray)
-//                        .fillMaxWidth()
-//                        .clickable { onDismissRequest()
-//                                   handlePromotion(state, selectedPiece, selectedPromotion = PieceType.QUEEN)},
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.Center
-//                ) {
-//                    Box {
-//                        val infiniteTransition = rememberInfiniteTransition()
-//                        val shake by infiniteTransition.animateFloat(
-//                            initialValue = 1f,
-//                            targetValue = 1.2f,
-//                            animationSpec = infiniteRepeatable(
-//                                animation = keyframes {
-//                                    durationMillis = 750
-//                                    1.1f at 500
-//                                },
-//                                repeatMode = RepeatMode.Restart
-//                            )
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_qlt60),
-//                            contentDescription = "Queen",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                                .alpha(0.5f)
-//                                .scale(shake)
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_qlt60),
-//                            contentDescription = "Queen",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                        )
-//                    }
-//                }
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .clickable { onDismissRequest()
-//                            handlePromotion(state, selectedPiece, selectedPromotion = PieceType.ROOK)},
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.Center
-//                ) {
-//                    Box {
-//                        val infiniteTransition = rememberInfiniteTransition()
-//                        val shake by infiniteTransition.animateFloat(
-//                            initialValue = 1f,
-//                            targetValue = 1.2f,
-//                            animationSpec = infiniteRepeatable(
-//                                animation = keyframes {
-//                                    durationMillis = 750
-//                                    1.1f at 500
-//                                },
-//                                repeatMode = RepeatMode.Restart
-//                            )
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_rlt60),
-//                            contentDescription = "Rook",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                                .alpha(0.5f)
-//                                .scale(shake)
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_rlt60),
-//                            contentDescription = "Rook",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                        )
-//                    }
-//                }
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .clickable { onDismissRequest()
-//                            handlePromotion(state, selectedPiece, selectedPromotion = PieceType.BISHOP)},
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.Center
-//                ) {
-//                    Box {
-//                        val infiniteTransition = rememberInfiniteTransition()
-//                        val shake by infiniteTransition.animateFloat(
-//                            initialValue = 1f,
-//                            targetValue = 1.2f,
-//                            animationSpec = infiniteRepeatable(
-//                                animation = keyframes {
-//                                    durationMillis = 750
-//                                    1.1f at 500
-//                                },
-//                                repeatMode = RepeatMode.Restart
-//                            )
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_blt60),
-//                            contentDescription = "Bishop",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                                .alpha(0.5f)
-//                                .scale( shake )
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_blt60),
-//                            contentDescription = "Bishop",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                        )
-//                    }
-//                }
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .clickable { onDismissRequest()
-//                            handlePromotion(state, selectedPiece, selectedPromotion = PieceType.KNIGHT)},
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.Center
-//                ) {
-//                    Box {
-//                        val infiniteTransition = rememberInfiniteTransition()
-//                        val shake by infiniteTransition.animateFloat(
-//                            initialValue = 1f,
-//                            targetValue = 1.2f,
-//                            animationSpec = infiniteRepeatable(
-//                                animation = keyframes {
-//                                    durationMillis = 750
-//                                    1.1f at 500
-//                                },
-//                                repeatMode = RepeatMode.Restart
-//                            )
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_nlt60),
-//                            contentDescription = "Knight",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                                .alpha(0.5f)
-//                                .scale(shake)
-//                        )
-//                        Image(
-//                            painter = painterResource(id = R.drawable.chess_nlt60),
-//                            contentDescription = "Knight",
-//                            modifier = Modifier
-//                                .align(Alignment.Center)
-//                                .size(80.dp)
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-
-fun handlePromotion(state: BoardState, piece: ChessPiece, selectedPromotion: PieceType) {
-    val direction = if(piece.color == PieceColor.WHITE) +1 else -1
-    val board = state.board
-
-    when (selectedPromotion) {
-        PieceType.QUEEN -> {
-            board[piece.position.row + direction][piece.position.col] = Queen(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
-            board[piece.position.row][piece.position.col] = null
-        }
-        PieceType.ROOK -> {
-            board[piece.position.row + direction][piece.position.col] = Rook(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
-            board[piece.position.row][piece.position.col] = null
-        }
-        PieceType.BISHOP -> {
-            board[piece.position.row + direction][piece.position.col] = Bishop(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
-            board[piece.position.row][piece.position.col] = null
-        }
-        PieceType.KNIGHT -> {
-            board[piece.position.row + direction][piece.position.col] = Knight(piece.color, Position(piece.position.row + direction, piece.position.col, FieldState.EMPTY))
-            board[piece.position.row][piece.position.col] = null
-        }
-        else -> null
-    }
-
-}
-
-
 
 @Preview
 @Composable

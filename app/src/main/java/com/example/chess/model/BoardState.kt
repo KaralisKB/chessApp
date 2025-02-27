@@ -126,8 +126,4 @@ data class BoardState(
         piece.position = to
         piece.movesMade++
     }
-
-    fun castle(piece: ChessPiece, to: Position) {
-
-    }
 }

@@ -11,7 +11,6 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
 
     override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position> {
 
-        // skipped position = remove pawn in the piece functions instead of recreating board
         val possibleMoves: MutableList<Position> = mutableListOf()
 
         val potentialMoves = getPotentialMoves(boardState)

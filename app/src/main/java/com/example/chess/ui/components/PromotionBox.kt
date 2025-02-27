@@ -130,12 +130,3 @@ fun PromotionBox(
             }
 
     }
-
-
-//@Composable
-//@Preview
-//private fun PromotionBoxPreview() {
-////    PromotionBox(
-////        )
-////    )
-////}
