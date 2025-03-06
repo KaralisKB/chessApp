@@ -1,6 +1,9 @@
 package com.example.chess.model
 
 import com.example.chess.R
+import com.example.chess.ui.components.ChessPiece
+import com.example.chess.ui.components.PieceColor
+import com.example.chess.ui.components.PieceType
 
 
 class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece {
@@ -8,6 +11,10 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
+    override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
+        TODO("Not yet implemented")
+    }
+    override var inCheck: Boolean = false
 
     override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position>? {
         val possibleMoves: MutableList<Position> = mutableListOf()
@@ -42,7 +49,7 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
         return potentialMoves
     }
 
-    fun getPotentialAttackMoves(boardState: BoardState): List<Position> {
+    fun getPotentialAttackMoves(): List<Position> {
         val potentialAttackMoves = mutableListOf<Position>()
         val direction = if (color == PieceColor.WHITE) 1 else -1
 

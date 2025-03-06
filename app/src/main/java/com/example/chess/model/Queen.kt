@@ -1,6 +1,9 @@
 package com.example.chess.model
 
 import com.example.chess.R
+import com.example.chess.ui.components.ChessPiece
+import com.example.chess.ui.components.PieceColor
+import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isValidMove
 
 class Queen(override val color: PieceColor, startPosition: Position) : ChessPiece {
@@ -8,6 +11,10 @@ class Queen(override val color: PieceColor, startPosition: Position) : ChessPiec
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
+    override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
+        TODO("Not yet implemented")
+    }
+    override var inCheck: Boolean = false
 
     override fun getPossibleMoves(
         boardState: BoardState,

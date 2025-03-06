@@ -17,9 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.chess.R
-import com.example.chess.model.ChessPiece
-import com.example.chess.model.PieceColor
-import com.example.chess.model.PieceType
 
 @Composable
 fun ChessLazyHorizontalGrid(data: List<ChessPiece?>) {

@@ -1,7 +1,9 @@
 package com.example.chess.model
 
-import android.util.Log
 import com.example.chess.R
+import com.example.chess.ui.components.ChessPiece
+import com.example.chess.ui.components.PieceColor
+import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isValidMove
 
 class King(override val color: PieceColor, startPosition: Position) : ChessPiece {
@@ -9,16 +11,14 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
+    override var inCheck = false
 
-    override fun getPossibleMoves(
-        boardState: BoardState, skippedPosition: Position?
-    ): List<Position> {
-        val possibleMoves: MutableList<Position> = mutableListOf()
-        val potentialMoves = getPotentialMoves(boardState)
+    override fun getEnemyMoves(boardState: BoardState): MutableSet<Position> {
+        val allEnemyMoves = mutableSetOf<Position>()
         val filteredPositions = boardState.board.flatten()
             .filterNotNull()
 
-        val allEnemyMoves = mutableSetOf<Position>()
+
         boardState.board.asSequence()
             .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
             .fold(allEnemyMoves) { acc, move ->
@@ -26,6 +26,7 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
                     val res = (move as Pawn).getAttackMoves(boardState)
                     acc.addAll(res)
                 } else {
+                    // TODO this .getPossibleMoves doesent take into consideration the moved king, this causes xray move error
                     val res = move?.getPossibleMoves(boardState, null) ?: emptyList()
                     acc.addAll(res)
                 }
@@ -40,48 +41,39 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
         )
 
         filteredPositions.fold(allEnemyMoves) { acc, piece ->
-            if ( piece is Pawn && piece.color != color) acc.addAll(piece.getPotentialAttackMoves(boardState))
+            if (piece is Pawn && piece.color != color) acc.addAll(piece.getPotentialAttackMoves())
             acc
         }
+        return allEnemyMoves
+    }
+
+    override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position> {
+        val potentialMoves = getPotentialMoves(boardState)
+        val allEnemyMoves = getEnemyMoves(boardState)
+        val possibleMoves = mutableListOf<Position>()
 
         for (move in potentialMoves) {
+            val (row, col) = move
+            if (row !in 0..7 || col !in 0..7) continue
+
             val movementType = getMovementType(move, boardState)
+            val movePosition = Position(move, FieldState.EMPTY)
+            val targetPiece = boardState.board[row][col]
 
-            if (allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0) possibleMoves.add(
-                Position(move.first, move.second, FieldState.BLOCKED)
-            )
-            else {
+            if (targetPiece != null && targetPiece.color == this.color) {
+                possibleMoves.add(Position(move, FieldState.EMPTY))
+            } else if (allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0) {
+                possibleMoves.add(Position(move, FieldState.BLOCKED))
+            } else if (movementType != 0 && !boardState.checkKingMoveInCheck(this, boardState, movePosition)) {
                 when (movementType) {
-                    1 -> possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
-                    2 -> {
-                        val newAllEnemyMoves = (boardState.board.asSequence()
-                            .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
-                            .map {
-                                if (it?.type != PieceType.KING) it?.getPossibleMoves(
-                                    boardState, Position(move, FieldState.EMPTY)
-                                ) else emptyList()
-                            }
-                            .toList()
-                            .fold(mutableListOf<Position>(), { acc, list ->
-                                if (list != null) acc.addAll(list)
-                                acc
-                            }))
-                        val res = newAllEnemyMoves.any { position -> position.isValidMove(move) }
-
-
-                        Log.d("King check", "move: $move \nContains: $res\n\n")
-                        possibleMoves.add(
-                            Position(
-                                move.first,
-                                move.second,
-                                if (res && movementType != 0) FieldState.BLOCKED else FieldState.ATTACK
-                            )
-                        )
-                    }
-                    0 -> possibleMoves.add(Position(move.first, move.second, FieldState.EMPTY))
+                    1 -> possibleMoves.add(Position(move, FieldState.VALID))
+                    2 -> possibleMoves.add(Position(move, FieldState.ATTACK))
                 }
+            } else {
+                possibleMoves.add(Position(move, FieldState.BLOCKED))
             }
         }
+
         return possibleMoves
     }
 
@@ -101,18 +93,34 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
             )
         )
 
-        if(movesMade == 0 && color == PieceColor.WHITE){
-            if (boardState.board[0][6] == null && boardState.board[0][5] == null && castlePossible(this, boardState).second == true) {
+        if (movesMade == 0 && color == PieceColor.WHITE) {
+            if (boardState.board[0][6] == null && boardState.board[0][5] == null && castlePossible(
+                    this,
+                    boardState
+                ).second
+            ) {
                 potentialMoves.add(Pair(0, 6))
             }
-            if (boardState.board[0][1] == null && boardState.board[0][2] == null && boardState.board[0][3] == null && castlePossible(this, boardState).first == true) {
+            if (boardState.board[0][1] == null && boardState.board[0][2] == null && boardState.board[0][3] == null && castlePossible(
+                    this,
+                    boardState
+                ).first
+            ) {
                 potentialMoves.add(Pair(0, 2))
             }
         } else if (movesMade == 0 && color == PieceColor.BLACK) {
-            if (boardState.board[7][6] == null && boardState.board[7][5] == null && castlePossible(this, boardState).second == true) {
+            if (boardState.board[7][6] == null && boardState.board[7][5] == null && castlePossible(
+                    this,
+                    boardState
+                ).second
+            ) {
                 potentialMoves.add(Pair(7, 6))
             }
-            if (boardState.board[7][1] == null && boardState.board[7][2] == null && boardState.board[7][3] == null && castlePossible(this, boardState).first == true) {
+            if (boardState.board[7][1] == null && boardState.board[7][2] == null && boardState.board[7][3] == null && castlePossible(
+                    this,
+                    boardState
+                ).first
+            ) {
                 potentialMoves.add(Pair(7, 2))
             }
         }
@@ -136,18 +144,19 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
         }
     }
 
-    fun castlePossible(piece: ChessPiece, boardState: BoardState): Pair<Boolean, Boolean> {
+    private fun castlePossible(piece: ChessPiece, boardState: BoardState): Pair<Boolean, Boolean> {
         var longCastleAvailable = false
         var shortCastleAvailable = false
         val board = boardState.board
         when {
             piece.color == PieceColor.WHITE -> {
-                if (board[0][0]?.movesMade == 0) longCastleAvailable = true
-                if (board[0][7]?.movesMade == 0) shortCastleAvailable = true
+                if (board[0][0]?.movesMade == 0 && !this.inCheck) longCastleAvailable = true
+                if (board[0][7]?.movesMade == 0 && !this.inCheck) shortCastleAvailable = true
             }
+
             piece.color == PieceColor.BLACK -> {
-                if (board[7][0]?.movesMade == 0) longCastleAvailable = true
-                if (board[7][7]?.movesMade == 0) shortCastleAvailable = true
+                if (board[7][0]?.movesMade == 0 && !this.inCheck) longCastleAvailable = true
+                if (board[7][7]?.movesMade == 0 && !this.inCheck) shortCastleAvailable = true
             }
         }
         return Pair(longCastleAvailable, shortCastleAvailable)

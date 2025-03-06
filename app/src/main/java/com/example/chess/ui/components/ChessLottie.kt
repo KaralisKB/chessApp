@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.ui.components
 
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable

@@ -1,7 +1,6 @@
-package com.example.chess.model
+package com.example.chess.ui.board
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -42,8 +41,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.example.chess.R
+import com.example.chess.model.BoardState
+import com.example.chess.ui.components.ChessLottie
+import com.example.chess.ui.components.ChessPiece
+import com.example.chess.model.FieldState
+import com.example.chess.model.Pawn
+import com.example.chess.ui.components.PieceColor
+import com.example.chess.ui.components.PieceType
+import com.example.chess.model.Position
 import com.example.chess.ui.components.ChessLazyHorizontalGrid
 import com.example.chess.ui.components.Piece
 import com.example.chess.ui.components.PromotionBox
@@ -51,59 +57,170 @@ import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
 
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Board(initialState: BoardState) {
     val state by remember { mutableStateOf(initialState) }
     var selectedPiece by rememberSaveable { mutableStateOf<ChessPiece?>(null) }
     var possibleMoves by rememberSaveable { mutableStateOf<List<Position>?>(null) }
-    var isPromotionPossible by remember {mutableStateOf(false)}
-    var clickedSquare by remember {mutableStateOf<Position?>(null)}
+    var isPromotionPossible by remember { mutableStateOf(false) }
+    var clickedSquare by remember { mutableStateOf<Position?>(null) }
+    var whiteInCheck by remember { mutableStateOf(false) }
+    var blackInCheck by remember { mutableStateOf(false) }
+    val whiteKing by remember { mutableStateOf(initialState.board[0][4]) }
+    val blackKing by remember { mutableStateOf(initialState.board[7][4]) }
     val onPromotionGranted: () -> Unit = {
+        println("Selected Piece: $selectedPiece")
+        val color = selectedPiece!!.color
         selectedPiece = null
         possibleMoves = null
         isPromotionPossible = false
+        when (color) {
+            PieceColor.BLACK -> {
+                if (state.checkCheck(
+                        whiteKing!!,
+                        whiteKing!!.getEnemyMoves(state).toList()
+                    ).first
+                ) {
+                    whiteInCheck = true
+                    if (state.isCheckmate(whiteKing!!, state)) {
+                        // black wins
+                        println("Black wins!")
+                    }
+                }
+            }
+            PieceColor.WHITE -> {
+                if (state.checkCheck(
+                        blackKing!!,
+                        blackKing!!.getEnemyMoves(state).toList()
+                    ).second
+                ) {
+                    blackInCheck = true
+                    if (state.isCheckmate(blackKing!!, state)) {
+                        // white wins
+                        println("White wins!")
+                    }
+                }
+            }
+        }
     }
 
     fun handleSquareClick(row: Int, col: Int) {
         clickedSquare = Position(row, col, FieldState.EMPTY)
         val clickedPiece = state.board[row][col]
 
-        if (selectedPiece?.type == PieceType.PAWN && selectedPiece?.movesMade!! >= 4  && (clickedSquare!!.row == 0 || clickedSquare!!.row == 7)){
-            if (selectedPiece?.color == PieceColor.WHITE && selectedPiece?.position?.row == 6){
+        if (selectedPiece?.type == PieceType.PAWN && selectedPiece?.movesMade!! >= 4 && (clickedSquare!!.row == 0 || clickedSquare!!.row == 7)) {
+            if (selectedPiece?.color == PieceColor.WHITE && selectedPiece?.position?.row == 6) {
                 isPromotionPossible = true
-            }else if (selectedPiece?.color == PieceColor.BLACK && selectedPiece?.position?.row == 1){
+            } else if (selectedPiece?.color == PieceColor.BLACK && selectedPiece?.position?.row == 1) {
                 isPromotionPossible = true
             }
         } else {
             if (selectedPiece != null &&
                 clickedPiece == null &&
-                possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true)
-            {
-                state.move(selectedPiece!!, Position(row, col, FieldState.VALID))
+                possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true
+            ) {
+                state.move(
+                    selectedPiece!!,
+                    Position(row, col, FieldState.VALID),
+                    whiteInCheck,
+                    blackInCheck
+                )
                 possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                if (state.checkCheck(
+                        whiteKing!!,
+                        whiteKing!!.getEnemyMoves(state).toList()
+                    ).first
+                ) {
+                    whiteInCheck = true
+                    if (state.isCheckmate(whiteKing!!, state)) {
+                        // black wins
+                        println("Black wins!")
+                    }
+                } else if (state.checkCheck(
+                        blackKing!!,
+                        blackKing!!.getEnemyMoves(state).toList()
+                    ).second
+                ) {
+                    blackInCheck = true
+                    if (state.isCheckmate(blackKing!!, state)) {
+                        // white wins
+                        println("White wins!")
+                    }
+                } else {
+                    whiteInCheck = false
+                    blackInCheck = false
+                }
                 isPromotionPossible = false
-            }
-            else if (selectedPiece != null &&
+            } else if (selectedPiece != null &&
                 clickedPiece != null &&
                 possibleMoves?.contains(Position(row, col, FieldState.ATTACK)) == true
             ) {
                 state.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
                 possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                if (state.checkCheck(
+                        whiteKing!!,
+                        whiteKing!!.getEnemyMoves(state).toList()
+                    ).first
+                ) {
+                    whiteInCheck = true
+                    if (state.isCheckmate(whiteKing!!, state)) {
+                        // black wins
+                        println("Black wins!")
+                    }
+                } else if (state.checkCheck(
+                        blackKing!!,
+                        blackKing!!.getEnemyMoves(state).toList()
+                    ).second
+                ) {
+                    blackInCheck = true
+                    if (state.isCheckmate(blackKing!!, state)) {
+                        // white wins
+                        println("White wins!")
+                    }
+                } else {
+                    whiteInCheck = false
+                    blackInCheck = false
+                }
                 isPromotionPossible = false
             } else {
                 selectedPiece = clickedPiece
                 possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                if ((whiteInCheck || blackInCheck) && selectedPiece?.type != PieceType.KING) {
+                    when {
+                        (whiteInCheck && selectedPiece?.color == PieceColor.WHITE) -> possibleMoves =
+                            possibleMoves?.filter {
+                                state.blockCheck(
+                                    selectedPiece!!,
+                                    whiteKing!!,
+                                    it,
+                                    whiteKing!!.getEnemyMoves(state).toList(),
+                                    state
+                                )
+                            }
+
+                        (blackInCheck && selectedPiece?.color == PieceColor.BLACK) -> possibleMoves =
+                            possibleMoves?.filter {
+                                state.blockCheck(
+                                    selectedPiece!!,
+                                    blackKing!!,
+                                    it,
+                                    blackKing!!.getEnemyMoves(state).toList(),
+                                    state
+                                )
+                            }
+                    }
+                } else if ((whiteInCheck || blackInCheck) && selectedPiece?.type == PieceType.KING) {
+                    possibleMoves = selectedPiece?.getPossibleMoves(state, null)
+                }
                 isPromotionPossible = false
             }
         }
     }
+
     Box(
         modifier = Modifier
-            .zIndex(1f)
             .fillMaxSize()
-            .background(color = Color.LightGray),
-        contentAlignment = Alignment.Center
+            .background(color = Color.LightGray)
     ) {
         Column(
             modifier = Modifier
@@ -113,39 +230,13 @@ fun Board(initialState: BoardState) {
 
         ) {
 
-                AnimatedVisibility(
-                    visible = isPromotionPossible,
-                    enter = slideInVertically(
-                        initialOffsetY = { fullHeight -> -fullHeight },
-                        animationSpec = tween(durationMillis = 1500)
-                    ) + fadeIn(animationSpec = tween(durationMillis = 1500)),
-                    exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> -fullHeight },
-                        animationSpec = tween(durationMillis = 500)
-                    ) + fadeOut(animationSpec = tween(durationMillis = 500))
-                ) {
-                    Box(modifier = Modifier.fillMaxSize().zIndex(0f).align(Alignment.CenterHorizontally), contentAlignment = Alignment.Center) {
-                        val promotionCandidate = if (selectedPiece != null) selectedPiece else Pawn(PieceColor.WHITE, Position(0,0,FieldState.EMPTY))
-                        PromotionBox(
-                            modifier = Modifier
-                                .padding(top = 25.dp),
-                            promotionCandidate!!,
-                            state,
-                            onAction = onPromotionGranted,
-                            position = promotionCandidate.position,
-                            isPromotionPossible
-                        )
-                    }
-            }
-            if(!isPromotionPossible) {
-                ChessLottie(
-                    modifier = Modifier
-                        .size(225.dp)
-                        .align(Alignment.CenterHorizontally),
-                    id = R.raw.chess_knight,
-                    1f
-                )
-            }
+            ChessLottie(
+                modifier = Modifier
+                    .size(225.dp)
+                    .align(Alignment.CenterHorizontally),
+                id = R.raw.chess_knight,
+                1f
+            )
             Spacer(modifier = Modifier.height(20.dp))
             ChessLazyHorizontalGrid(state.killedWhitePieces)
             Spacer(modifier = Modifier.height(20.dp))
@@ -214,6 +305,34 @@ fun Board(initialState: BoardState) {
                 1.5f
             )
         }
+
+        AnimatedVisibility(
+            modifier = Modifier.align(Alignment.TopCenter),
+            visible = isPromotionPossible,
+            enter = slideInVertically(
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 500)
+            ) + fadeIn(animationSpec = tween(durationMillis = 500)),
+            exit = slideOutVertically(
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 500),
+            ) + fadeOut(animationSpec = tween(durationMillis = 500))
+        ) {
+
+            val promotionCandidate = if (selectedPiece != null) selectedPiece else Pawn(
+                PieceColor.WHITE,
+                Position(0, 0, FieldState.EMPTY)
+            )
+            PromotionBox(
+                modifier = Modifier.padding(top = 25.dp),
+                promotionCandidate!!,
+                state,
+                onAction = onPromotionGranted,
+                position = promotionCandidate.position,
+                clickedSquare!!
+            )
+
+        }
     }
 }
 
@@ -271,6 +390,7 @@ fun GridItem(
     }
 }
 
+
 @Composable
 fun BoardLabel(text: String, modifier: Modifier = Modifier) {
     Text(
@@ -284,6 +404,6 @@ fun BoardLabel(text: String, modifier: Modifier = Modifier) {
 
 @Preview
 @Composable
-fun BoardPreview() {
+private fun BoardPreview() {
     Board(BoardState())
 }

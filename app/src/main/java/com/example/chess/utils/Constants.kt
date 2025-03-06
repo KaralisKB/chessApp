@@ -1,12 +1,10 @@
 package com.example.chess.utils
 
-import com.example.chess.R
 import com.example.chess.model.Bishop
-import com.example.chess.model.ChessPiece
+import com.example.chess.ui.components.ChessPiece
 import com.example.chess.model.FieldState
 import com.example.chess.model.Knight
-import com.example.chess.model.PieceColor
-import com.example.chess.model.PieceType
+import com.example.chess.ui.components.PieceColor
 import com.example.chess.model.Position
 import com.example.chess.model.Queen
 import com.example.chess.model.Rook
