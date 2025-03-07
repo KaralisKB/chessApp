@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.local.model
 
 data class Position(val row: Int, val col: Int, var type: FieldState) {
 

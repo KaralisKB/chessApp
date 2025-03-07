@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.local.model
 
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
@@ -108,8 +108,6 @@ data class BoardState(
                     piece.movesMade++
                     board[7][3]?.movesMade = board[7][3]?.movesMade!! + 1
                 }
-
-                else -> null
             }
         } else {
             //Basic Movement Logic
@@ -154,7 +152,7 @@ data class BoardState(
         return Pair(whiteInCheck, blackInCheck)
     }
 
-    fun blockCheck(selectedPiece: ChessPiece, attackedKing: ChessPiece, proposedBlock: Position, attackingMoves: List<Position>?, state: BoardState): Boolean {
+    fun blockCheck(selectedPiece: ChessPiece, attackedKing: ChessPiece, proposedBlock: Position, state: BoardState): Boolean {
         var isBlock = false
         if(board[proposedBlock.row][proposedBlock.col] != null) {
             val killedPiece = board[proposedBlock.row][proposedBlock.col]
@@ -190,7 +188,6 @@ data class BoardState(
     return isBlock
 }
 
-    //TODO fix ts
     fun checkKingMoveInCheck(king: ChessPiece, boardState: BoardState, to: Position): Boolean {
         val oldPosition = king.position
         val oldPiece = boardState.board[to.row][to.col]
@@ -223,7 +220,7 @@ data class BoardState(
             val moves = piece.getPossibleMoves(boardState, null)
             if (moves != null) {
                 for (move in moves) {
-                    if (boardState.blockCheck(piece, king, move, king.getEnemyMoves(boardState).toList(), boardState)) {
+                    if (boardState.blockCheck(piece, king, move, boardState)) {
                         return false
                     }
                 }

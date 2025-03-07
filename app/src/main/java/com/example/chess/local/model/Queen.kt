@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.local.model
 
 import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece
@@ -6,15 +6,14 @@ import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isValidMove
 
-class Bishop(override val color: PieceColor, startPosition: Position) : ChessPiece {
-    override val type: PieceType = PieceType.BISHOP
+class Queen(override val color: PieceColor, startPosition: Position) : ChessPiece {
+    override val type: PieceType = PieceType.QUEEN
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
     override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
         TODO("Not yet implemented")
     }
-
     override var inCheck: Boolean = false
 
     override fun getPossibleMoves(
@@ -25,14 +24,18 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
 
         val potentialMoves = getPotentialMoves(boardState)
 
-        for (set in 1..4) {
+        for (set in 1..8) {
             var flag = false
             val subList = when (set) {
                 1 -> potentialMoves.subList(0, 7)
                 2 -> potentialMoves.subList(8, 15)
                 3 -> potentialMoves.subList(16, 23)
                 4 -> potentialMoves.subList(24, 31)
-                else -> throw Exception("u r too stupid")
+                5 -> potentialMoves.subList(32, 39)
+                6 -> potentialMoves.subList(40, 47)
+                7 -> potentialMoves.subList(48, 55)
+                8 -> potentialMoves.subList(56, 63)
+                else -> throw Exception("Out of scope ")
             }
 
             subList.fold(mutableListOf<Position>()) { acc, move ->
@@ -55,27 +58,44 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
                 acc
             }
         }
+
         return possibleMoves
     }
 
     override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
         val potentialMoves = mutableListOf<Pair<Int, Int>>()
 
-        for (direction in 1..4) {
+        for (direction in 1..8) {
             when (direction) {
                 1 -> for (square in 1..8) {
-                    potentialMoves.add(Pair(position.row + square, position.col + square))
+                    potentialMoves.add(Pair(position.row + square, position.col))
                 }
 
                 2 -> for (square in 1..8) {
-                    potentialMoves.add(Pair(position.row - square, position.col + square))
+                    potentialMoves.add(Pair(position.row + square, position.col + square))
                 }
 
                 3 -> for (square in 1..8) {
-                    potentialMoves.add(Pair(position.row - square, position.col - square))
+                    potentialMoves.add(Pair(position.row, position.col + square))
                 }
 
                 4 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row - square, position.col + square))
+                }
+
+                5 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row - square, position.col))
+                }
+
+                6 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row - square, position.col - square))
+                }
+
+                7 -> for (square in 1..8) {
+                    potentialMoves.add(Pair(position.row, position.col - square))
+                }
+
+                8 -> for (square in 1..8) {
                     potentialMoves.add(Pair(position.row + square, position.col - square))
                 }
             }
@@ -104,8 +124,6 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
     }
 
     override fun getImage(): Int {
-        if (color == PieceColor.WHITE) return R.drawable.chess_blt60 else return R.drawable.chess_bdt60
+        if (color == PieceColor.WHITE) return R.drawable.chess_qlt60 else return R.drawable.chess_qdt60
     }
-
-
 }

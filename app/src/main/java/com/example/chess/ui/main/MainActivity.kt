@@ -8,19 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-
 import com.example.chess.ui.theme.ChessTheme
-import com.example.chess.ui.board.Board
-import com.example.chess.model.BoardState
-import com.example.chess.ui.components.PieceColor
-
+import com.example.chess.ui.board.BoardScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,9 +32,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ChessApp(modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        var turn by remember { mutableStateOf(PieceColor.WHITE) }
-        val boardState = BoardState()
-        Board(boardState)
+        BoardScreen()
     }
 
 }

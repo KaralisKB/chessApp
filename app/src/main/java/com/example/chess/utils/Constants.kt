@@ -1,13 +1,13 @@
 package com.example.chess.utils
 
-import com.example.chess.model.Bishop
+import com.example.chess.local.model.Bishop
 import com.example.chess.ui.components.ChessPiece
-import com.example.chess.model.FieldState
-import com.example.chess.model.Knight
+import com.example.chess.local.model.FieldState
+import com.example.chess.local.model.Knight
 import com.example.chess.ui.components.PieceColor
-import com.example.chess.model.Position
-import com.example.chess.model.Queen
-import com.example.chess.model.Rook
+import com.example.chess.local.model.Position
+import com.example.chess.local.model.Queen
+import com.example.chess.local.model.Rook
 
 object Constants {
     fun getWhitePromotionPieces(): List<ChessPiece> =

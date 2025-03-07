@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.local.model
 
 import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece
@@ -23,7 +23,9 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
         val potentialMoves = getPotentialMoves(boardState)
 
         for (move in potentialMoves) {
-            if (skippedPosition != null && skippedPosition.isValidMove(move)) possibleMoves.add(Position(move.first, move.second, FieldState.VALID))
+            if (skippedPosition != null && skippedPosition.isValidMove(move)) possibleMoves.add(
+                Position(move.first, move.second, FieldState.VALID)
+            )
             val isValid = getMovementType(move, boardState)
             if (isValid == 1) {
                 possibleMoves.add(Position(move.first, move.second, FieldState.VALID))

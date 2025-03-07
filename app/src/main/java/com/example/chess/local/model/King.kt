@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.local.model
 
 import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece

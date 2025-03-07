@@ -1,4 +1,4 @@
-package com.example.chess.model
+package com.example.chess.local.model
 
 import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece
@@ -11,7 +11,7 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
-    override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
+    override fun getEnemyMoves(boardState: BoardState): MutableSet<Position> {
         TODO("Not yet implemented")
     }
     override var inCheck: Boolean = false

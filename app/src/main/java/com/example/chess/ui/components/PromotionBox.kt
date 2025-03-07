@@ -29,9 +29,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.chess.model.BoardState
-import com.example.chess.model.FieldState
-import com.example.chess.model.Position
+import com.example.chess.local.model.BoardState
+import com.example.chess.local.model.FieldState
+import com.example.chess.local.model.Position
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.Constants
 
