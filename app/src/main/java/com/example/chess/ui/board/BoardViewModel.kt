@@ -97,7 +97,6 @@ class BoardViewModel : ViewModel() {
                     checkCheckCheck()
                     isPromotionPossible = false
                 }
-
                 (selectedPiece != null && clickedPiece != null &&
                         possibleMoves?.contains(Position(row, col, FieldState.ATTACK)) == true) -> {
                     board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
@@ -106,7 +105,6 @@ class BoardViewModel : ViewModel() {
                     checkCheckCheck()
                     isPromotionPossible = false
                 }
-
                 else -> {
                     selectPiece(clickedPiece)
                     val updatedSelectedPiece =

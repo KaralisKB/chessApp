@@ -52,6 +52,7 @@ import com.example.chess.ui.components.PromotionBox
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.chess.ui.components.BlobLottie
 
 
 @Composable
@@ -181,7 +182,7 @@ fun GridItem(
     val scale = remember { Animatable(1f) }
 
     val movePosition = possibleMoves?.firstOrNull { it.row == row && it.col == column }
-    val moveColor = movePosition?.type?.getStateColor()
+    val moveAnimation = movePosition?.type?.getStateColor()
 
     LaunchedEffect(highlightedPiece) {
         if (piece == highlightedPiece) {
@@ -210,18 +211,12 @@ fun GridItem(
                 scaleY = scale.value
             }
     ) {
-        if (piece != null) {
-            Piece(piece)
+        if (moveAnimation != null) {
+            BlobLottie(Modifier, movePosition.type.getStateColor()!!, 1f)
         }
 
-        if (moveColor != null) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawCircle(
-                    color = moveColor.copy(alpha = 0.7f),
-                    radius = size.minDimension / 3f,
-                    center = center
-                )
-            }
+        if (piece != null) {
+            Piece(piece)
         }
     }
 }
