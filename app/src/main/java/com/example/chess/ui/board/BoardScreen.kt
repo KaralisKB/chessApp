@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -65,16 +66,10 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
                 .align(Alignment.Center)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.Top
-
         ) {
-
-            ChessLottie(
-                modifier = Modifier
+            ChessLottie(modifier = Modifier
                     .size(225.dp)
-                    .align(Alignment.CenterHorizontally),
-                id = R.raw.chess_knight,
-                1f
-            )
+                    .align(Alignment.CenterHorizontally), id = R.raw.chess_knight,1f)
             Spacer(modifier = Modifier.height(20.dp))
             ChessLazyHorizontalGrid(viewModel.board.killedWhitePieces)
             Spacer(modifier = Modifier.height(20.dp))
@@ -185,6 +180,9 @@ fun GridItem(
     val piece = boardState.board[row][column]
     val scale = remember { Animatable(1f) }
 
+    val movePosition = possibleMoves?.firstOrNull { it.row == row && it.col == column }
+    val moveColor = movePosition?.type?.getStateColor()
+
     LaunchedEffect(highlightedPiece) {
         if (piece == highlightedPiece) {
             scale.animateTo(
@@ -201,32 +199,32 @@ fun GridItem(
             )
         }
     }
-    Box(modifier = Modifier
-        .size(40.dp)
-        .background(when {
-            piece != null && piece == highlightedPiece -> Color.DarkGray
-            possibleMoves != null && possibleMoves.any { it.row == row && it.col == column } ->
-                Position(
-                    row,
-                    column,
-                    possibleMoves.first { it.row == row && it.col == column }
-                        .type).type.getStateColor()
-                    ?: if ((row + column) % 2 == 0) Jade else Color.White
 
-            else -> if ((row + column) % 2 == 0) Jade else Color.White
-        }
-        )
-        .clickable { onSquareClick() }
-        .graphicsLayer {
-            scaleX = scale.value
-            scaleY = scale.value
-        }) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .background(if ((row + column) % 2 == 0) Jade else Color.White)
+            .clickable { onSquareClick() }
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+            }
+    ) {
         if (piece != null) {
             Piece(piece)
         }
+
+        if (moveColor != null) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawCircle(
+                    color = moveColor.copy(alpha = 0.7f),
+                    radius = size.minDimension / 3f,
+                    center = center
+                )
+            }
+        }
     }
 }
-
 
 @Composable
 fun BoardLabel(text: String, modifier: Modifier = Modifier) {

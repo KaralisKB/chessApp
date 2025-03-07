@@ -73,23 +73,9 @@ class BoardViewModel : ViewModel() {
         if ((whiteInCheck || blackInCheck) && selectedPiece?.type != PieceType.KING) {
             when {
                 (whiteInCheck && selectedPiece?.color == PieceColor.WHITE) -> possibleMoves =
-                    possibleMoves?.filter {
-                        board.blockCheck(
-                            selectedPiece!!,
-                            whiteKing!!,
-                            it,
-                            board
-                        )
-                    }
+                    possibleMoves?.filter { board.blockCheck(selectedPiece!!, whiteKing!!, it, board)}
                 (blackInCheck && selectedPiece?.color == PieceColor.BLACK) -> possibleMoves =
-                    possibleMoves?.filter {
-                        board.blockCheck(
-                            selectedPiece!!,
-                            blackKing!!,
-                            it,
-                            board
-                        )
-                    }
+                    possibleMoves?.filter { board.blockCheck(selectedPiece!!, blackKing!!, it, board) }
             }
         } else if ((whiteInCheck || blackInCheck) && selectedPiece?.type == PieceType.KING) {
             possibleMoves = selectedPiece?.getPossibleMoves(board, null)
@@ -97,31 +83,31 @@ class BoardViewModel : ViewModel() {
     }
 
     fun handleSquareClick(row: Int, col: Int) {
-        with(this) {
-            clickedSquare = Position(row, col, FieldState.EMPTY)
-            val clickedPiece = this.board.board[row][col]
-            promotionCheck(selectedPiece, clickedSquare!!)
+        clickedSquare = Position(row, col, FieldState.EMPTY)
+        val clickedPiece = this.board.board[row][col]
+        promotionCheck(selectedPiece, clickedSquare!!)
 
-            if(!isPromotionPossible) {
-                if (selectedPiece != null &&
-                    clickedPiece == null &&
-                    possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true
-                ) {
+        if (!isPromotionPossible) {
+            when {
+                (selectedPiece != null && clickedPiece == null &&
+                        possibleMoves?.contains(Position(row, col, FieldState.VALID)) == true) -> {
                     board.move(selectedPiece!!, Position(row, col, FieldState.VALID), whiteInCheck, blackInCheck)
                     possibleMoves = selectedPiece?.getPossibleMoves(board, null)
                     changeTurn()
                     checkCheckCheck()
                     isPromotionPossible = false
-                } else if (selectedPiece != null &&
-                    clickedPiece != null &&
-                    possibleMoves?.contains(Position(row, col, FieldState.ATTACK)) == true
-                ) {
-                    board.attack(selectedPiece ?: return@with, Position(row, col, FieldState.ATTACK))
+                }
+
+                (selectedPiece != null && clickedPiece != null &&
+                        possibleMoves?.contains(Position(row, col, FieldState.ATTACK)) == true) -> {
+                    board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
                     possibleMoves = selectedPiece?.getPossibleMoves(board, null)
                     changeTurn()
                     checkCheckCheck()
                     isPromotionPossible = false
-                } else {
+                }
+
+                else -> {
                     selectPiece(clickedPiece)
                     val updatedSelectedPiece =
                         if (clickedPiece?.color == selectedPiece?.color) clickedPiece else null
