@@ -11,16 +11,17 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
-    override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
+    override suspend fun getEnemyMoves(boardState: BoardState): MutableSet<Position> {
         TODO("Not yet implemented")
     }
 
     override var inCheck: Boolean = false
 
-    override fun getPossibleMoves(
+    override suspend fun getPossibleMoves(
         boardState: BoardState,
-        skippedPosition: Position?
-    ): List<Position>? {
+        skippedPosition: Position?,
+        king: ChessPiece?
+    ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
 
         val potentialMoves = getPotentialMoves(boardState)
@@ -39,9 +40,8 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
                 if (!flag) {
                     val isValid = getMovementType(move, boardState)
                     when {
-                        skippedPosition != null && skippedPosition.isValidMove(move) -> {
+                        skippedPosition != null && skippedPosition.row == move.first && skippedPosition.col == move.second -> {
                             possibleMoves.add(Position(move, FieldState.VALID))
-                            flag = true
                         }
                         isValid == 1 -> possibleMoves.add(Position(move, FieldState.VALID))
                         isValid == 2 -> {
@@ -58,7 +58,7 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
         return possibleMoves
     }
 
-    override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
+    override suspend fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
         val potentialMoves = mutableListOf<Pair<Int, Int>>()
 
         for (direction in 1..4) {

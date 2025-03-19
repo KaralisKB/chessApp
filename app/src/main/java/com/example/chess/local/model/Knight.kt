@@ -5,21 +5,24 @@ import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isValidMove
+import java.util.zip.Checksum
 
 class Knight(override val color: PieceColor, startPosition: Position) : ChessPiece {
     override val type: PieceType = PieceType.KNIGHT
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
-    override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
+    override suspend fun getEnemyMoves(boardState: BoardState): MutableSet<Position> {
         TODO("Not yet implemented")
     }
     override var inCheck: Boolean = false
 
-    override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position> {
-
+    override suspend fun getPossibleMoves(
+        boardState: BoardState,
+        skippedPosition: Position?,
+        king: ChessPiece?
+    ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
-
         val potentialMoves = getPotentialMoves(boardState)
 
         for (move in potentialMoves) {
@@ -36,7 +39,7 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
         return possibleMoves
     }
 
-    override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
+    override suspend fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
         val potentialMoves = mutableListOf<Pair<Int, Int>>()
 
         // "Up" moves

@@ -4,7 +4,12 @@ import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
+import com.example.chess.utils.ext.isCastleValid
 import com.example.chess.utils.ext.isValidMove
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 
 class King(override val color: PieceColor, startPosition: Position) : ChessPiece {
     override val type: PieceType = PieceType.KING
@@ -13,119 +18,124 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
     override var movesMade: Int = 0
     override var inCheck = false
 
-    override fun getEnemyMoves(boardState: BoardState): MutableSet<Position> {
+    override suspend fun getEnemyMoves(boardState: BoardState): MutableSet<Position> = withContext(
+        Dispatchers.Default
+    ) {
         val allEnemyMoves = mutableSetOf<Position>()
-        val filteredPositions = boardState.board.flatten()
+        val enemyPieces = boardState.board.flatten()
             .filterNotNull()
+            .filter { it.color != color && it.type != PieceType.KING }
 
-
-        boardState.board.asSequence()
-            .flatMap { pieces -> pieces.filter { piece -> piece != null && piece.color != color && piece.type != PieceType.KING } }
-            .fold(allEnemyMoves) { acc, move ->
-                if (move?.type == PieceType.PAWN) {
-                    val res = (move as Pawn).getAttackMoves(boardState)
-                    acc.addAll(res)
-                } else {
-                    // TODO this .getPossibleMoves doesent take into consideration the moved king, this causes xray move error
-                    val res = move?.getPossibleMoves(boardState, null) ?: emptyList()
-                    acc.addAll(res)
+        val moveJobs = enemyPieces.map { piece ->
+            async {
+                when (piece.type) {
+                    PieceType.PAWN -> (piece as Pawn).getAttackMoves(boardState)
+                    PieceType.KING -> emptyList()
+                    else -> piece.getPossibleMoves(boardState, this@King.position) ?: emptyList()
                 }
-                acc
             }
+        }
 
-        allEnemyMoves.addAll(
-            filteredPositions
-                .first { it.type == PieceType.KING && it.color != color }
-                .getPotentialMoves(boardState)
-                .map { Position(it.first, it.second, FieldState.ATTACK) }
-        )
+        val enemyMoves = moveJobs.awaitAll().flatten()
+        allEnemyMoves.addAll(enemyMoves)
 
-        filteredPositions.fold(allEnemyMoves) { acc, piece ->
-            if (piece is Pawn && piece.color != color) acc.addAll(piece.getPotentialAttackMoves())
+        val enemyKingMoves = boardState.board.flatten()
+            .firstOrNull() { it?.type == PieceType.KING && it.color != color }
+            ?.getPotentialMoves(boardState)
+            ?.map { Position(it.first, it.second, FieldState.ATTACK) }
+            ?: emptyList()
+
+        allEnemyMoves.addAll(enemyKingMoves)
+        return@withContext allEnemyMoves
+    }
+
+    override suspend fun getPossibleMoves(
+        boardState: BoardState,
+        skippedPosition: Position?,
+        king: ChessPiece?
+    ): List<Position> = withContext(Dispatchers.Default) {
+        val potentialMoves = getPotentialMoves(boardState)
+        val allEnemyMoves = async { getEnemyMoves(boardState) }.await()
+        val possibleMoves = mutableSetOf<Position>()
+
+
+        potentialMoves.fold(possibleMoves) { acc, move ->
+            val row = move.first
+            val col = move.second
+            if (row in 0..7 && col in 0..7) {
+                val movementType = getMovementType(move, boardState)
+                val movePosition = Position(move, FieldState.EMPTY)
+                val targetPiece = boardState.board[row][col]
+
+                val moveResult = when {
+                    targetPiece != null && targetPiece.color == color ->
+                        Position(move, FieldState.EMPTY)
+
+                    allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0 ->
+                        Position(move, FieldState.BLOCKED)
+
+                    movementType != 0 && (king == null || !king.inCheck || boardState.blockCheck(
+                        this@King,
+                        king,
+                        movePosition,
+                        boardState
+                    )) -> {
+                        when (movementType) {
+                            1 -> Position(move, FieldState.VALID)
+                            2 -> Position(move, FieldState.ATTACK)
+                            else -> Position(move, FieldState.BLOCKED)
+                        }
+                    }
+
+                    else -> Position(move, FieldState.BLOCKED)
+                }
+                acc.add(moveResult)
+            }
             acc
         }
-        return allEnemyMoves
+
+        return@withContext possibleMoves.toList()
     }
 
-    override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position> {
-        val potentialMoves = getPotentialMoves(boardState)
-        val allEnemyMoves = getEnemyMoves(boardState)
-        val possibleMoves = mutableListOf<Position>()
+    override suspend fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> =
+        withContext(Dispatchers.Default) {
+            val potentialMoves = mutableListOf<Pair<Int, Int>>()
 
-        for (move in potentialMoves) {
-            val (row, col) = move
-            if (row !in 0..7 || col !in 0..7) continue
-
-            val movementType = getMovementType(move, boardState)
-            val movePosition = Position(move, FieldState.EMPTY)
-            val targetPiece = boardState.board[row][col]
-
-            if (targetPiece != null && targetPiece.color == this.color) {
-                possibleMoves.add(Position(move, FieldState.EMPTY))
-            } else if (allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0) {
-                possibleMoves.add(Position(move, FieldState.BLOCKED))
-            } else if (movementType != 0 && !boardState.checkKingMoveInCheck(this, boardState, movePosition)) {
-                when (movementType) {
-                    1 -> possibleMoves.add(Position(move, FieldState.VALID))
-                    2 -> possibleMoves.add(Position(move, FieldState.ATTACK))
-                }
-            } else {
-                possibleMoves.add(Position(move, FieldState.BLOCKED))
-            }
-        }
-
-        return possibleMoves
-    }
-
-    override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
-        val potentialMoves = mutableListOf<Pair<Int, Int>>()
-
-        potentialMoves.addAll(
-            listOf(
-                Pair(position.row + 1, position.col),
-                Pair(position.row + 1, position.col + 1),
-                Pair(position.row, position.col + 1),
-                Pair(position.row - 1, position.col + 1),
-                Pair(position.row - 1, position.col),
-                Pair(position.row - 1, position.col - 1),
-                Pair(position.row, position.col - 1),
-                Pair(position.row + 1, position.col - 1)
+            potentialMoves.addAll(
+                listOf(
+                    Pair(position.row + 1, position.col),
+                    Pair(position.row + 1, position.col + 1),
+                    Pair(position.row, position.col + 1),
+                    Pair(position.row - 1, position.col + 1),
+                    Pair(position.row - 1, position.col),
+                    Pair(position.row - 1, position.col - 1),
+                    Pair(position.row, position.col - 1),
+                    Pair(position.row + 1, position.col - 1)
+                )
             )
-        )
 
-        if (movesMade == 0 && color == PieceColor.WHITE) {
-            if (boardState.board[0][6] == null && boardState.board[0][5] == null && castlePossible(
-                    this,
-                    boardState
-                ).second
-            ) {
-                potentialMoves.add(Pair(0, 6))
+            val isCastlePossible = castlePossible(this@King, boardState)
+            if (movesMade == 0) {
+                when (color) {
+                    PieceColor.WHITE -> {
+                        if (boardState.isCastleValid(0, 6, false) && isCastlePossible.second
+                        ) potentialMoves.add(Pair(0, 6))
+
+                        if (boardState.isCastleValid(0, 2, true) && isCastlePossible.first)
+                            potentialMoves.add(Pair(0, 2))
+                    }
+
+                    PieceColor.BLACK -> {
+                        if (boardState.isCastleValid(7, 6, false) && isCastlePossible.second)
+                            potentialMoves.add(Pair(7, 6))
+
+                        if (boardState.isCastleValid(7, 2, true) && isCastlePossible.first)
+                            potentialMoves.add(Pair(7, 2))
+                    }
+                }
             }
-            if (boardState.board[0][1] == null && boardState.board[0][2] == null && boardState.board[0][3] == null && castlePossible(
-                    this,
-                    boardState
-                ).first
-            ) {
-                potentialMoves.add(Pair(0, 2))
-            }
-        } else if (movesMade == 0 && color == PieceColor.BLACK) {
-            if (boardState.board[7][6] == null && boardState.board[7][5] == null && castlePossible(
-                    this,
-                    boardState
-                ).second
-            ) {
-                potentialMoves.add(Pair(7, 6))
-            }
-            if (boardState.board[7][1] == null && boardState.board[7][2] == null && boardState.board[7][3] == null && castlePossible(
-                    this,
-                    boardState
-                ).first
-            ) {
-                potentialMoves.add(Pair(7, 2))
-            }
+            potentialMoves
         }
-        return potentialMoves
-    }
 
     override fun getMovementType(to: Pair<Int, Int>, boardState: BoardState): Int {
         val row = to.first
@@ -163,6 +173,6 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
     }
 
     override fun getImage(): Int {
-        if (color == PieceColor.WHITE) return R.drawable.chess_klt60 else return R.drawable.chess_kdt60
+        return if (color == PieceColor.WHITE) R.drawable.chess_klt60 else R.drawable.chess_kdt60
     }
 }

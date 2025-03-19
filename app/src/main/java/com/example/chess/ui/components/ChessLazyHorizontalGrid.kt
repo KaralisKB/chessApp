@@ -44,20 +44,14 @@ fun Piece(piece: ChessPiece?) {
         PieceType.ROOK -> if (piece.color == PieceColor.WHITE) R.drawable.chess_rlt60 else R.drawable.chess_rdt60
         PieceType.QUEEN -> if (piece.color == PieceColor.WHITE) R.drawable.chess_qlt60 else R.drawable.chess_qdt60
         PieceType.KING -> if (piece.color == PieceColor.WHITE) R.drawable.chess_klt60 else R.drawable.chess_kdt60
-        else -> null
     }
-
-    if (imageId != null) {
-        Box {
-            Image(
-                painter = painterResource(id = imageId),
-                contentDescription = piece.type.toString(),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(38.dp)
-            )
-        }
-    } else {
-        Text("?", color = if (piece.color == PieceColor.WHITE) Color.White else Color.Black)
+    Box {
+        Image(
+            painter = painterResource(id = imageId),
+            contentDescription = piece.type.toString(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(38.dp)
+        )
     }
 }

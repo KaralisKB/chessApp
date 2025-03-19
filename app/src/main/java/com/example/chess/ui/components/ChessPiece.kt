@@ -17,10 +17,10 @@ interface ChessPiece {
     val color: PieceColor
     var position: Position
     var isCaptured: Boolean
-    fun getPossibleMoves(boardState: BoardState, skippedPosition: Position? = null): List<Position>?
-    fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>>
+    suspend fun getPossibleMoves(boardState: BoardState, skippedPosition: Position? = null, king: ChessPiece? = null): List<Position>?
+    suspend fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>>
     fun getMovementType(to: Pair<Int,Int>, boardState: BoardState): Int
-    fun getEnemyMoves(boardState: BoardState): MutableSet<Position>
+    suspend fun getEnemyMoves(boardState: BoardState): MutableSet<Position>
     fun getImage(): Int
     var movesMade: Int
 }

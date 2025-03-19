@@ -11,12 +11,18 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
     override var position: Position = startPosition
     override var isCaptured: Boolean = false
     override var movesMade: Int = 0
-    override fun getEnemyMoves(state: BoardState): MutableSet<Position> {
+    override suspend fun getEnemyMoves(boardState: BoardState): MutableSet<Position> {
         TODO("Not yet implemented")
     }
     override var inCheck: Boolean = false
 
-    override fun getPossibleMoves(boardState: BoardState, skippedPosition: Position?): List<Position>? {
+    //TODO Weird rook movement when king in check and rook clicked?
+
+    override suspend fun getPossibleMoves(
+        boardState: BoardState,
+        skippedPosition: Position?,
+        king: ChessPiece?
+    ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
 
         val potentialMoves = getPotentialMoves(boardState)
@@ -35,10 +41,8 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
                 if (!flag) {
                     val isValid = getMovementType(move, boardState)
                     when {
-                        skippedPosition != null && skippedPosition.isValidMove(move) -> {
-                            // rook doesent check square after enemy king (skipped position)
+                        skippedPosition != null && skippedPosition.row == move.first && skippedPosition.col == move.second -> {
                             possibleMoves.add(Position(move, FieldState.VALID))
-                            flag = true
                         }
                         isValid == 1 -> possibleMoves.add(Position(move, FieldState.VALID))
                         isValid == 2 -> {
@@ -56,7 +60,7 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
     }
 
 
-    override fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
+    override suspend fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>> {
         val potentialMoves = mutableListOf<Pair<Int, Int>>()
 
         for (direction in 1..4) {
