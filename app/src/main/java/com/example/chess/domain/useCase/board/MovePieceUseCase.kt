@@ -5,6 +5,7 @@ import com.example.chess.domain.useCase.UseCaseParams
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.Position
 import com.example.chess.ui.components.ChessPiece
+import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isWhite
 import javax.inject.Inject
@@ -45,10 +46,9 @@ class MovePieceUseCase @Inject constructor() : UseCaseParams<MovePieceUseCase.Pa
         with(data) {
             return when {
                 (isWhiteKingAttacked || isBlackKingAttacked) && piece?.type != PieceType.KING -> {
-
                     val targetedKing = when {
-                        (isWhiteKingAttacked && piece.isWhite()) -> board.whiteKing
-                        (isBlackKingAttacked && !piece.isWhite()) -> board.blackKing
+                        (isWhiteKingAttacked && piece?.color == PieceColor.WHITE) -> board.whiteKing
+                        (isBlackKingAttacked && piece?.color == PieceColor.BLACK) -> board.blackKing
                         else -> null
                     }
 

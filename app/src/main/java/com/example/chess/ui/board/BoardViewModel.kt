@@ -22,7 +22,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BoardViewModel @Inject constructor (
-
     private val movePieceUseCase: MovePieceUseCase
 ) : BaseViewModel(Dispatchers.Default) {
     var selectedPiece by mutableStateOf<ChessPiece?>(null)
@@ -34,23 +33,16 @@ class BoardViewModel @Inject constructor (
     private var blackInCheck by mutableStateOf(false)
     private val whiteKing by mutableStateOf(board.board[0][4])
     private val blackKing by mutableStateOf(board.board[7][4])
+    private var attackingPiece by mutableStateOf<ChessPiece?>(null)
     val onPromotionGranted: () -> Unit = {
         selectPiece(null)
         possibleMoves = listOf()
-        checkCheckCheck()
+        checkCheckCheck(null)
         changeTurn()
     }
 
     private var boardArray = board.board
     private val someBullShit = MutableLiveData<String>()
-
-//    private fun template() {
-//        val params = SomeBoardUseCase.Params.create("bullshit")
-//        ioToUi(
-//            io = { useCase.execute(params) },
-//            ui = { someBullShit.postValue(it) }
-//        )
-//    }
 
     private fun selectPiece(selectedPiece: ChessPiece?) {
         this.selectedPiece = when (selectedPiece == null) {
@@ -63,11 +55,14 @@ class BoardViewModel @Inject constructor (
         isWhiteTurn = !isWhiteTurn
         selectedPiece = null
         possibleMoves = listOf()
+        println("Turn changed: White's Turn = $isWhiteTurn")
+
     }
 
-    private fun checkCheckCheck() {
+    private fun checkCheckCheck(attackingPiece: ChessPiece?) {
         if (board.checkCheck(whiteKing!!, board).first) {
             whiteInCheck = true
+            this.attackingPiece = attackingPiece
             if (board.isCheckmate(whiteKing!!, board)) {
                 println("Black Wins!")
             }
@@ -79,6 +74,7 @@ class BoardViewModel @Inject constructor (
         } else {
             whiteInCheck = false
             blackInCheck = false
+            this.attackingPiece = null
         }
     }
 
@@ -119,7 +115,8 @@ class BoardViewModel @Inject constructor (
                         }
                     }
                     changeTurn()
-                    checkCheckCheck()
+
+                    checkCheckCheck(selectedPiece)
                 }
 
                 (selectedPiece != null && clickedPiece != null && possibleMoves.contains(Position(row, col, FieldState.ATTACK))) -> {
@@ -130,13 +127,13 @@ class BoardViewModel @Inject constructor (
                         }
                     }
                     changeTurn()
-                    checkCheckCheck()
+                    checkCheckCheck(selectedPiece)
                 }
 
                 else -> {
                     selectPiece(clickedPiece)
                     val updatedSelectedPiece =
-                        if (clickedPiece?.color == selectedPiece?.color) clickedPiece else null
+                        if (clickedPiece?.color == selectedPiece?.color) clickedPiece else selectedPiece
 
                     val params = MovePieceUseCase.Params.create(
                         piece = updatedSelectedPiece,
@@ -153,18 +150,25 @@ class BoardViewModel @Inject constructor (
         }
     }
 
-    private fun checkMoveParser(whiteInCheck: Boolean, blackInCheck: Boolean, possibleMoves: List<Position>): List<Position> {
-        val res = when {
+    private fun checkMoveParser(
+        whiteInCheck: Boolean,
+        blackInCheck: Boolean,
+        possibleMoves: List<Position>
+    ): List<Position> {
+        println("Before filtering: ${possibleMoves.size} moves available for ${selectedPiece?.type}")
+
+        val filteredMoves = when {
             whiteInCheck && selectedPiece != whiteKing -> {
-                possibleMoves.filter { board.blockCheck(selectedPiece, whiteKing!!, it, board ) }
+                possibleMoves.filter { board.blockCheck(selectedPiece, whiteKing!!, it, board) }
             }
-
-            blackInCheck && selectedPiece != blackKing-> {
-                possibleMoves.filter { board.blockCheck(selectedPiece, blackKing!!, it, board ) }
+            blackInCheck && selectedPiece != blackKing -> {
+                possibleMoves.filter { board.blockCheck(selectedPiece, blackKing!!, it, board) }
             }
-
-            else -> possibleMoves
+            else -> possibleMoves.filter { board.xrayCheck(selectedPiece, it, board) }
         }
-        return res
+
+        println("After filtering: ${filteredMoves.size} moves remain for ${selectedPiece?.type}")
+        return filteredMoves
     }
+
 }

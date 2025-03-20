@@ -2,6 +2,7 @@ package com.example.chess.local.model
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.Piece
 import com.example.chess.ui.components.PieceColor
@@ -16,11 +17,11 @@ import kotlinx.coroutines.runBlocking
 data class BoardState(
     val board: Array<Array<ChessPiece?>> = Array(8) { Array(8) {null } }
 ){
-    val boardStateScope = CoroutineScope(Dispatchers.Default + CoroutineName("BoardStateScope"))
+    private val boardStateScope = CoroutineScope(Dispatchers.Default + CoroutineName("BoardStateScope"))
     val killedWhitePieces = mutableListOf<ChessPiece?>()
     val killedBlackPieces = mutableListOf<ChessPiece?>()
-    val whiteKing by mutableStateOf(board[0][4])
-    val blackKing by mutableStateOf(board[7][4])
+    var whiteKing by mutableStateOf(board[0][4])
+    var blackKing by mutableStateOf(board[7][4])
 
     init {
         board[0][0] = Rook(PieceColor.WHITE, Position(0, 0, FieldState.EMPTY)) // A1
@@ -58,16 +59,15 @@ data class BoardState(
         blackInCheck: Boolean
     ) {
         val oldPosition = piece.position
-        // Castle Logic
+
         if (piece.type == PieceType.KING &&
             piece.movesMade == 0 && (!whiteInCheck && !blackInCheck) && (to == Position(
                 0,
                 6,
                 FieldState.VALID
-            ) ||
-                    to == Position(0, 2, FieldState.VALID) ||
-                    to == Position(7, 6, FieldState.VALID) ||
-                    to == Position(7, 2, FieldState.VALID))
+            ) || to == Position(0, 2, FieldState.VALID)
+                    || to == Position(7, 6, FieldState.VALID)
+                    || to == Position(7, 2, FieldState.VALID))
         ) {
             when {
                 (piece.color == PieceColor.WHITE) -> if (to == Position(
@@ -168,7 +168,6 @@ data class BoardState(
             (board[to.row][to.col]?.color == PieceColor.BLACK) -> killedBlackPieces.add(
                 board[to.row][to.col]
             )
-
             else -> null
         }
 
@@ -194,8 +193,10 @@ data class BoardState(
             king.inCheck = false
         }
 
+        println("White King in Check: $whiteInCheck, Black King in Check: $blackInCheck")
         return Pair(whiteInCheck, blackInCheck)
     }
+
 
     fun blockCheck(
         selectedPiece: ChessPiece?,
@@ -219,6 +220,54 @@ data class BoardState(
         return isBlock
     }
 
+    fun xrayCheck(selectedPiece: ChessPiece?, proposedMove: Position, state: BoardState): Boolean {
+        if (selectedPiece == null) return false
+
+        val oldPosition = selectedPiece.position
+
+        val tempBoard = BoardState(
+            board = state.board.map { it.clone() }.toTypedArray()
+        )
+
+        tempBoard.board[proposedMove.row][proposedMove.col] = selectedPiece
+        tempBoard.board[oldPosition.row][oldPosition.col] = null
+        selectedPiece.position = proposedMove
+
+        if (selectedPiece.type == PieceType.KING) {
+            if (selectedPiece.color == PieceColor.WHITE) {
+                tempBoard.whiteKing = selectedPiece
+            } else {
+                tempBoard.blackKing = selectedPiece
+            }
+        }
+
+        if (selectedPiece.type == PieceType.KING) {
+            val isKingSafe = when (selectedPiece.color) {
+                PieceColor.WHITE -> {
+                    val inCheck = tempBoard.checkCheck(tempBoard.whiteKing ?: return false, tempBoard).first
+                    !inCheck
+                }
+                PieceColor.BLACK -> {
+                    val inCheck = tempBoard.checkCheck(tempBoard.blackKing ?: return false, tempBoard).second
+                    !inCheck
+                }
+            }
+
+            selectedPiece.position = oldPosition
+
+            val targetSquare = state.board[proposedMove.row][proposedMove.col]
+            if (targetSquare != null && targetSquare.color == selectedPiece.color) {
+                return false
+            }
+            if (!isKingSafe) {
+                proposedMove.type = FieldState.BLOCKED
+            }
+            return true
+        }
+        selectedPiece.position = oldPosition
+        return true
+    }
+
     private fun isCheckBlocked(king: ChessPiece, state: BoardState): Boolean {
         val someCheck = checkCheck(king, state)
         return when (king.color) {
@@ -226,27 +275,6 @@ data class BoardState(
             PieceColor.BLACK -> !someCheck.second
         }
     }
-
-    suspend fun checkKingMoveInCheck(king: ChessPiece, boardState: BoardState, to: Position): Boolean {
-        val originalPosition = king.position
-        val oldPiece = boardState.board[to.row][to.col]
-
-        boardState.board[to.row][to.col] = king
-        boardState.board[originalPosition.row][originalPosition.col] = null
-        king.position = to
-
-        val enemyMoves = boardStateScope.async(Dispatchers.Default) {
-            king.getEnemyMoves(boardState).toList()
-        }.await()
-        val isStillInCheck = enemyMoves.any { it.row == to.row && it.col == to.col }
-
-        boardState.board[originalPosition.row][originalPosition.col] = king
-        boardState.board[to.row][to.col] = oldPiece
-        king.position = originalPosition
-
-        return isStillInCheck
-    }
-
 
     fun isCheckmate(king: ChessPiece, boardState: BoardState): Boolean {
         if (!king.inCheck) return false
