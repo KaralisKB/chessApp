@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.chess.ui.theme.ChessTheme
 import com.example.chess.ui.board.BoardScreen
+import com.example.chess.ui.theme.ChessTheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,12 +23,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            HideStatusBar()
             ChessTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     ChessApp()
                 }
             }
         }
+    }
+}
+
+@Composable
+fun HideStatusBar() {
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.isStatusBarVisible = false
     }
 }
 

@@ -53,6 +53,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.compose.foundation)
+
 
     // Hilt (Updated to latest version)
     implementation(libs.hilt.android)

@@ -1,6 +1,5 @@
 package com.example.chess.ui.board
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -10,7 +9,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,34 +24,38 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chess.R
 import com.example.chess.local.model.BoardState
-import com.example.chess.ui.components.ChessLottie
-import com.example.chess.ui.components.ChessPiece
 import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.Pawn
-import com.example.chess.ui.components.PieceColor
 import com.example.chess.local.model.Position
+import com.example.chess.ui.components.ActionList
+import com.example.chess.ui.components.BlobLottie
 import com.example.chess.ui.components.ChessLazyHorizontalGrid
+import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.Piece
+import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PromotionBox
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.chess.ui.components.BlobLottie
 
 
 @Composable
@@ -67,12 +69,21 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.Top
         ) {
-            ChessLottie(modifier = Modifier
-                    .size(225.dp)
-                    .align(Alignment.CenterHorizontally), id = R.raw.chess_knight,1f)
-            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                modifier = Modifier.padding(top = 50.dp).align(Alignment.CenterHorizontally),
+                text = stringResource(R.string.app_title),
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                style = TextStyle(
+                    shadow = Shadow(
+                        color = Color.Black,
+                        blurRadius = 1f,
+                        offset = Offset(0f, 4f)
+                    )
+                )
+            )
             ChessLazyHorizontalGrid(viewModel.board.killedWhitePieces)
             Spacer(modifier = Modifier.height(20.dp))
             Row(
@@ -116,7 +127,6 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
                     .padding(top = 10.dp)
             ) {
                 Spacer(modifier = Modifier.weight(1f))
-
                 Row(Modifier.weight(8f)) {
                     for (col in 0..7) {
                         BoardLabel(
@@ -124,21 +134,18 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(20.dp))
             ChessLazyHorizontalGrid(viewModel.board.killedBlackPieces)
-
             Spacer(modifier = Modifier.height(20.dp))
-            ChessLottie(
-                modifier = Modifier
-                    .size(150.dp)
-                    .align(Alignment.CenterHorizontally),
-                id = R.raw.trophy,
-                1.5f
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                ActionList(viewModel.actionList)
+            }
         }
 
         AnimatedVisibility(
@@ -163,7 +170,8 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
                 viewModel.board,
                 onAction = viewModel.onPromotionGranted,
                 position = promotionCandidate.position,
-                viewModel.clickedSquare!!
+                viewModel.clickedSquare!!,
+                viewModel
             )
 
         }

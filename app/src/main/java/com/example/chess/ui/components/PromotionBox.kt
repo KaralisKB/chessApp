@@ -29,9 +29,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.chess.local.model.Action
+import com.example.chess.local.model.ActionType
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.Position
+import com.example.chess.ui.board.BoardViewModel
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.Constants
 
@@ -42,9 +45,24 @@ fun PromotionBox(
     state: BoardState,
     onAction: () -> Unit,
     position: Position,
-    clickedSquare: Position
+    clickedSquare: Position,
+    viewModel: BoardViewModel
 ) {
     val onChosen: (ChessPiece) -> Unit = { piece ->
+
+        viewModel.logAction(
+            Action(
+                selectedPiece,
+                ActionType.PROMOTION,
+                time = System.currentTimeMillis(),
+                originalPosition = selectedPiece.position,
+                newPosition = Position(clickedSquare.row, clickedSquare.col, FieldState.VALID),
+                killedPiece = null,
+                promotedToPiece = piece,
+                castleIsLong = null,
+                whiteInCheck = null,
+            )
+        )
 
         state.board[clickedSquare.row][clickedSquare.col] = piece
         state.board[clickedSquare.row][clickedSquare.col]?.position =

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Chess</string>
+    <string name="app_title">Chessorola</string>
+    <string name="move">%1$s%2$s</string>
 </resources>

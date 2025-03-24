@@ -1,11 +1,14 @@
 package com.example.chess.ui.board
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.chess.domain.useCase.board.MovePieceUseCase
+import com.example.chess.local.model.Action
+import com.example.chess.local.model.ActionType
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.Position
@@ -16,6 +19,9 @@ import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isWhite
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -24,6 +30,14 @@ import javax.inject.Inject
 class BoardViewModel @Inject constructor (
     private val movePieceUseCase: MovePieceUseCase
 ) : BaseViewModel(Dispatchers.Default) {
+
+    private val _elapsedTime = MutableStateFlow(0L)
+    val elapsedTime = _elapsedTime.asStateFlow()
+
+    init {
+        startTimer()
+        GameTimer
+    }
     var selectedPiece by mutableStateOf<ChessPiece?>(null)
     private var isWhiteTurn by mutableStateOf(true)
     var possibleMoves by mutableStateOf<List<Position>>(listOf())
@@ -34,6 +48,9 @@ class BoardViewModel @Inject constructor (
     private val whiteKing by mutableStateOf(board.board[0][4])
     private val blackKing by mutableStateOf(board.board[7][4])
     private var attackingPiece by mutableStateOf<ChessPiece?>(null)
+    private var boardArray = board.board
+    private val someBullShit = MutableLiveData<String>()
+    var actionList = mutableStateListOf<Action?>()
     val onPromotionGranted: () -> Unit = {
         selectPiece(null)
         possibleMoves = listOf()
@@ -41,8 +58,7 @@ class BoardViewModel @Inject constructor (
         changeTurn()
     }
 
-    private var boardArray = board.board
-    private val someBullShit = MutableLiveData<String>()
+
 
     private fun selectPiece(selectedPiece: ChessPiece?) {
         this.selectedPiece = when (selectedPiece == null) {
@@ -103,6 +119,19 @@ class BoardViewModel @Inject constructor (
         if (!_isPromotionPossible(selectedPiece, clickedSquare)) {
             when {
                 (selectedPiece != null && clickedPiece == null && possibleMoves.contains(Position(row, col, FieldState.VALID))) -> {
+                    logAction(
+                        Action(
+                            selectedPiece!!,
+                            ActionType.MOVE,
+                            time = System.currentTimeMillis(),
+                            originalPosition = selectedPiece!!.position,
+                            Position(row + 1, col, FieldState.VALID),
+                            null,
+                            null,
+                            null,
+                            null
+                            )
+                    )
                     board.move(
                         selectedPiece!!,
                         Position(row, col, FieldState.VALID),
@@ -115,11 +144,23 @@ class BoardViewModel @Inject constructor (
                         }
                     }
                     changeTurn()
-
                     checkCheckCheck(selectedPiece)
                 }
 
                 (selectedPiece != null && clickedPiece != null && possibleMoves.contains(Position(row, col, FieldState.ATTACK))) -> {
+                    logAction(
+                        Action(
+                            selectedPiece!!,
+                            ActionType.ATTACK,
+                            time = System.currentTimeMillis(),
+                            originalPosition = selectedPiece!!.position,
+                            Position(row, col, FieldState.ATTACK),
+                            killedPiece = clickedPiece,
+                            null,
+                            null,
+                            null
+                        )
+                    )
                     board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
                     viewModelScope.launch {
                         possibleMoves = withContext(Dispatchers.Default) {
@@ -169,6 +210,19 @@ class BoardViewModel @Inject constructor (
 
         println("After filtering: ${filteredMoves.size} moves remain for ${selectedPiece?.type}")
         return filteredMoves
+    }
+
+    fun logAction(action: Action){
+        actionList.add(action)
+    }
+
+    private fun startTimer() {
+        viewModelScope.launch {
+            while(true) {
+                delay(1000L)
+                _elapsedTime.value += 1
+            }
+        }
     }
 
 }

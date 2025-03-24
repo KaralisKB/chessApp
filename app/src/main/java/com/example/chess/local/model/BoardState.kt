@@ -4,20 +4,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.chess.ui.components.ChessPiece
-import com.example.chess.ui.components.Piece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 data class BoardState(
-    val board: Array<Array<ChessPiece?>> = Array(8) { Array(8) {null } }
-){
-    private val boardStateScope = CoroutineScope(Dispatchers.Default + CoroutineName("BoardStateScope"))
+    val board: Array<Array<ChessPiece?>> = Array(8) { Array(8) { null } }
+) {
+    private val boardStateScope =
+        CoroutineScope(Dispatchers.Default + CoroutineName("BoardStateScope"))
     val killedWhitePieces = mutableListOf<ChessPiece?>()
     val killedBlackPieces = mutableListOf<ChessPiece?>()
     var whiteKing by mutableStateOf(board[0][4])
@@ -168,6 +167,7 @@ data class BoardState(
             (board[to.row][to.col]?.color == PieceColor.BLACK) -> killedBlackPieces.add(
                 board[to.row][to.col]
             )
+
             else -> null
         }
 
@@ -233,22 +233,23 @@ data class BoardState(
         tempBoard.board[oldPosition.row][oldPosition.col] = null
         selectedPiece.position = proposedMove
 
-        if (selectedPiece.type == PieceType.KING) {
-            if (selectedPiece.color == PieceColor.WHITE) {
-                tempBoard.whiteKing = selectedPiece
-            } else {
-                tempBoard.blackKing = selectedPiece
-            }
+        if (selectedPiece.type == PieceType.KING && selectedPiece.color == PieceColor.WHITE) {
+            tempBoard.whiteKing = selectedPiece
+        } else {
+            tempBoard.blackKing = selectedPiece
         }
 
         if (selectedPiece.type == PieceType.KING) {
             val isKingSafe = when (selectedPiece.color) {
                 PieceColor.WHITE -> {
-                    val inCheck = tempBoard.checkCheck(tempBoard.whiteKing ?: return false, tempBoard).first
+                    val inCheck =
+                        tempBoard.checkCheck(tempBoard.whiteKing ?: return false, tempBoard).first
                     !inCheck
                 }
+
                 PieceColor.BLACK -> {
-                    val inCheck = tempBoard.checkCheck(tempBoard.blackKing ?: return false, tempBoard).second
+                    val inCheck =
+                        tempBoard.checkCheck(tempBoard.blackKing ?: return false, tempBoard).second
                     !inCheck
                 }
             }
