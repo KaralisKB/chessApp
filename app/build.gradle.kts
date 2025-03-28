@@ -56,9 +56,14 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.compose.foundation)
 
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
 
     // Hilt (Updated to latest version)
     implementation(libs.hilt.android)
+    implementation(libs.androidx.room.common)
     kapt(libs.hilt.android.compiler)
 
     testImplementation(libs.junit)
@@ -68,6 +73,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
 }
 
 // Enable incremental KSP processing

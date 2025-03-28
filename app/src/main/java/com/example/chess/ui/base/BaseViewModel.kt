@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -20,7 +24,7 @@ abstract class BaseViewModel(
         }
     }
 
-    fun <T> ioToUnit(io: suspend () -> Unit) {
+    fun ioToUnit(io: suspend () -> Unit) {
         viewModelScope.launch {
             withContext(ioDispatcher) { io() }
         }
@@ -29,4 +33,9 @@ abstract class BaseViewModel(
     fun <T> ioToUnit(io: suspend () -> T, ui: suspend () -> Unit) {
         ioToUnit(io, ui)
     }
+
+    fun <T> Flow<T>.toStateFlow(
+        sharingIn: SharingStarted = SharingStarted.Eagerly,
+        initial: T
+    ): StateFlow<T> = this.stateIn(viewModelScope, sharingIn, initial)
 }

@@ -60,7 +60,7 @@ fun PromotionBox(
                 killedPiece = null,
                 promotedToPiece = piece,
                 castleIsLong = null,
-                whiteInCheck = null,
+                colorInCheck = null,
             )
         )
 

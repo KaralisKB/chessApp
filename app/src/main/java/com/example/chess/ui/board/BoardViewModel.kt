@@ -1,12 +1,13 @@
 package com.example.chess.ui.board
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.chess.domain.useCase.board.MovePieceUseCase
+import com.example.chess.domain.useCase.logging.ClearActionsUseCase
+import com.example.chess.domain.useCase.logging.GetActionsUseCase
+import com.example.chess.domain.useCase.logging.SaveActionUseCase
 import com.example.chess.local.model.Action
 import com.example.chess.local.model.ActionType
 import com.example.chess.local.model.BoardState
@@ -19,25 +20,21 @@ import com.example.chess.ui.components.PieceType
 import com.example.chess.utils.ext.isWhite
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class BoardViewModel @Inject constructor (
-    private val movePieceUseCase: MovePieceUseCase
+class BoardViewModel @Inject constructor(
+    private val movePieceUseCase: MovePieceUseCase,
+    private val saveActionUseCase: SaveActionUseCase,
+    private val getActionsUseCase: GetActionsUseCase,
+    private val clearActionsUseCase: ClearActionsUseCase
 ) : BaseViewModel(Dispatchers.Default) {
 
-    private val _elapsedTime = MutableStateFlow(0L)
-    val elapsedTime = _elapsedTime.asStateFlow()
+    val actionList: StateFlow<List<Action>> =
+        getActionsUseCase.execute().toStateFlow(initial = listOf())
 
-    init {
-        startTimer()
-        GameTimer
-    }
     var selectedPiece by mutableStateOf<ChessPiece?>(null)
     private var isWhiteTurn by mutableStateOf(true)
     var possibleMoves by mutableStateOf<List<Position>>(listOf())
@@ -47,18 +44,22 @@ class BoardViewModel @Inject constructor (
     private var blackInCheck by mutableStateOf(false)
     private val whiteKing by mutableStateOf(board.board[0][4])
     private val blackKing by mutableStateOf(board.board[7][4])
-    private var attackingPiece by mutableStateOf<ChessPiece?>(null)
     private var boardArray = board.board
-    private val someBullShit = MutableLiveData<String>()
-    var actionList = mutableStateListOf<Action?>()
+
     val onPromotionGranted: () -> Unit = {
         selectPiece(null)
         possibleMoves = listOf()
-        checkCheckCheck(null)
+        checkCheckCheck()
         changeTurn()
     }
 
+    fun deleteAction() = ioToUnit {
+        clearActionsUseCase.execute()
+    }
 
+    init {
+        deleteAction()
+    }
 
     private fun selectPiece(selectedPiece: ChessPiece?) {
         this.selectedPiece = when (selectedPiece == null) {
@@ -70,15 +71,15 @@ class BoardViewModel @Inject constructor (
     private fun changeTurn() {
         isWhiteTurn = !isWhiteTurn
         selectedPiece = null
-        possibleMoves = listOf()
+        possibleMoves = emptyList()
         println("Turn changed: White's Turn = $isWhiteTurn")
 
     }
 
-    private fun checkCheckCheck(attackingPiece: ChessPiece?) {
+    private fun checkCheckCheck() {
         if (board.checkCheck(whiteKing!!, board).first) {
             whiteInCheck = true
-            this.attackingPiece = attackingPiece
+
             if (board.isCheckmate(whiteKing!!, board)) {
                 println("Black Wins!")
             }
@@ -90,7 +91,7 @@ class BoardViewModel @Inject constructor (
         } else {
             whiteInCheck = false
             blackInCheck = false
-            this.attackingPiece = null
+
         }
     }
 
@@ -100,7 +101,8 @@ class BoardViewModel @Inject constructor (
             piece.type == PieceType.PAWN && piece.movesMade >= 4 && (clickedSquare.row == 0 || clickedSquare.row == 7) ->
                 piece.isWhite() && piece.position.row == 6 ||
                         !piece.isWhite() && piece.position.row == 1
-             else -> false
+
+            else -> false
         }
     }
 
@@ -118,7 +120,23 @@ class BoardViewModel @Inject constructor (
 
         if (!_isPromotionPossible(selectedPiece, clickedSquare)) {
             when {
-                (selectedPiece != null && clickedPiece == null && possibleMoves.contains(Position(row, col, FieldState.VALID))) -> {
+                (selectedPiece != null && clickedPiece == null && possibleMoves.contains(
+                    Position(
+                        row,
+                        col,
+                        FieldState.VALID
+                    )
+                )) -> {
+
+                    board.move(
+                        selectedPiece!!,
+                        Position(row, col, FieldState.VALID),
+                        whiteInCheck,
+                        blackInCheck
+                    )
+                    checkCheckCheck()
+                    val colorInCheck: PieceColor? =
+                        if (whiteInCheck) PieceColor.WHITE else if (blackInCheck) PieceColor.BLACK else null
                     logAction(
                         Action(
                             selectedPiece!!,
@@ -129,25 +147,23 @@ class BoardViewModel @Inject constructor (
                             null,
                             null,
                             null,
-                            null
-                            )
+                            colorInCheck
+                        )
                     )
-                    board.move(
-                        selectedPiece!!,
-                        Position(row, col, FieldState.VALID),
-                        whiteInCheck,
-                        blackInCheck
-                    )
-                    viewModelScope.launch {
-                        possibleMoves = withContext(Dispatchers.Default) {
-                            selectedPiece?.getPossibleMoves(board, null) ?: listOf()
-                        }
-                    }
                     changeTurn()
-                    checkCheckCheck(selectedPiece)
                 }
 
-                (selectedPiece != null && clickedPiece != null && possibleMoves.contains(Position(row, col, FieldState.ATTACK))) -> {
+                (selectedPiece != null && clickedPiece != null && possibleMoves.contains(
+                    Position(
+                        row,
+                        col,
+                        FieldState.ATTACK
+                    )
+                )) -> {
+                    board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
+                    checkCheckCheck()
+                    val colorInCheck: PieceColor? =
+                        if (whiteInCheck) PieceColor.WHITE else if (blackInCheck) PieceColor.BLACK else null
                     logAction(
                         Action(
                             selectedPiece!!,
@@ -158,17 +174,10 @@ class BoardViewModel @Inject constructor (
                             killedPiece = clickedPiece,
                             null,
                             null,
-                            null
+                            colorInCheck = colorInCheck
                         )
                     )
-                    board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
-                    viewModelScope.launch {
-                        possibleMoves = withContext(Dispatchers.Default) {
-                            selectedPiece?.getPossibleMoves(board, null) ?: listOf()
-                        }
-                    }
                     changeTurn()
-                    checkCheckCheck(selectedPiece)
                 }
 
                 else -> {
@@ -184,7 +193,13 @@ class BoardViewModel @Inject constructor (
                     )
                     ioToUi(
                         io = { movePieceUseCase.execute(params) },
-                        ui = { possibleMoves = checkMoveParser(whiteInCheck, blackInCheck, updatedSelectedPiece?.getPossibleMoves(board) ?: emptyList() )}
+                        ui = {
+                            possibleMoves = checkMoveParser(
+                                whiteInCheck,
+                                blackInCheck,
+                                updatedSelectedPiece?.getPossibleMoves(board) ?: emptyList()
+                            )
+                        }
                     )
                 }
             }
@@ -202,9 +217,11 @@ class BoardViewModel @Inject constructor (
             whiteInCheck && selectedPiece != whiteKing -> {
                 possibleMoves.filter { board.blockCheck(selectedPiece, whiteKing!!, it, board) }
             }
+
             blackInCheck && selectedPiece != blackKing -> {
                 possibleMoves.filter { board.blockCheck(selectedPiece, blackKing!!, it, board) }
             }
+
             else -> possibleMoves.filter { board.xrayCheck(selectedPiece, it, board) }
         }
 
@@ -212,17 +229,11 @@ class BoardViewModel @Inject constructor (
         return filteredMoves
     }
 
-    fun logAction(action: Action){
-        actionList.add(action)
-    }
-
-    private fun startTimer() {
+    fun logAction(action: Action) {
         viewModelScope.launch {
-            while(true) {
-                delay(1000L)
-                _elapsedTime.value += 1
-            }
+            saveActionUseCase(action)
         }
     }
+
 
 }

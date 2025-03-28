@@ -17,6 +17,10 @@ constraintlayout = "2.2.0"
 ksp = "1.9.0-1.0.13"
 accompanist = "0.31.0-alpha"
 composeFoundation = "1.6.7"
+roomCommon = "2.6.1"
+roomRuntime = "2.6.1"
+roomCompiler = "2.6.1"
+roomKtx = "2.6.1"
 
 
 [libraries]
@@ -41,12 +45,15 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "composeFoundation"}
-
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime"}
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler"}
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx"}
 
 #views
 view-lottie = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 
 
 [plugins]

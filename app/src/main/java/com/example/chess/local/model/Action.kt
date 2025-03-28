@@ -1,6 +1,7 @@
 package com.example.chess.local.model
 
 import com.example.chess.ui.components.ChessPiece
+import com.example.chess.ui.components.PieceColor
 
 data class Action(
     val originalPiece: ChessPiece,
@@ -11,5 +12,5 @@ data class Action(
     val killedPiece: ChessPiece?,
     val promotedToPiece: ChessPiece?,
     val castleIsLong: Boolean?,
-    val whiteInCheck: Boolean?
+    val colorInCheck: PieceColor?
     )

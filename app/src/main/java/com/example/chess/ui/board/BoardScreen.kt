@@ -24,9 +24,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,7 @@ import com.example.chess.utils.ext.getStateColor
 
 @Composable
 fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
+    val actionList by viewModel.actionList.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -69,6 +74,7 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             Text(
                 modifier = Modifier.padding(top = 50.dp).align(Alignment.CenterHorizontally),
@@ -144,8 +150,9 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                ActionList(viewModel.actionList)
+                ActionList(actionList)
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         AnimatedVisibility(

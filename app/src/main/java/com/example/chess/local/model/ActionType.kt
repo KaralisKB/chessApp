@@ -4,6 +4,5 @@ enum class ActionType {
     MOVE,
     ATTACK,
     CASTLE,
-    PROMOTION,
-    CHECK
+    PROMOTION
 }
