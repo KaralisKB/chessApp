@@ -19,7 +19,8 @@ class Queen(override val color: PieceColor, startPosition: Position) : ChessPiec
     override suspend fun getPossibleMoves(
         boardState: BoardState,
         skippedPosition: Position?,
-        king: ChessPiece?
+        king: ChessPiece?,
+        lineOfAttack: List<Position>?
     ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
 

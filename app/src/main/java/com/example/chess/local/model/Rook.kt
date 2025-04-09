@@ -16,12 +16,11 @@ class Rook(override val color: PieceColor, startPosition: Position) : ChessPiece
     }
     override var inCheck: Boolean = false
 
-    //TODO Weird rook movement when king in check and rook clicked?
-
     override suspend fun getPossibleMoves(
         boardState: BoardState,
         skippedPosition: Position?,
-        king: ChessPiece?
+        king: ChessPiece?,
+        lineOfAttack: List<Position>?
     ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
 

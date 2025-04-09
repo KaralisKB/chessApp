@@ -4,6 +4,7 @@ import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
 
 data class Action(
+    val turnId: Int,
     val originalPiece: ChessPiece,
     val type: ActionType,
     val time: Long,

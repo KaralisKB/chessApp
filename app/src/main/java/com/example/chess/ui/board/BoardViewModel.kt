@@ -40,10 +40,15 @@ class BoardViewModel @Inject constructor(
     var possibleMoves by mutableStateOf<List<Position>>(listOf())
     var board by mutableStateOf(BoardState())
     var clickedSquare by mutableStateOf<Position?>(null)
+    var lineOfAttack by mutableStateOf<List<Position>>(listOf())
+    var lastMovedPiece by mutableStateOf<ChessPiece?>(null)
     private var whiteInCheck by mutableStateOf(false)
     private var blackInCheck by mutableStateOf(false)
-    private val whiteKing by mutableStateOf(board.board[0][4])
-    private val blackKing by mutableStateOf(board.board[7][4])
+    private val whiteKing: ChessPiece?
+        get() = board.board.flatten().firstOrNull { it?.type == PieceType.KING && it.color == PieceColor.WHITE }
+
+    private val blackKing: ChessPiece?
+        get() = board.board.flatten().firstOrNull { it?.type == PieceType.KING && it.color == PieceColor.BLACK }
     private var boardArray = board.board
 
     val onPromotionGranted: () -> Unit = {
@@ -77,30 +82,131 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun checkCheckCheck() {
-        if (board.checkCheck(whiteKing!!, board).first) {
-            whiteInCheck = true
+        val currentWhiteKing = whiteKing
+        val currentBlackKing = blackKing
 
-            if (board.isCheckmate(whiteKing!!, board)) {
-                println("Black Wins!")
-            }
-        } else if (board.checkCheck(blackKing!!, board).second) {
-            blackInCheck = true
-            if (board.isCheckmate(blackKing!!, board)) {
-                print("White Wins!")
-            }
-        } else {
-            whiteInCheck = false
-            blackInCheck = false
+        if (currentWhiteKing == null || currentBlackKing == null) return
 
+        val whiteResult = board.checkCheck(currentWhiteKing, board)
+        val blackResult = board.checkCheck(currentBlackKing, board)
+
+        whiteInCheck = whiteResult.first
+        blackInCheck = blackResult.second
+
+        if(whiteInCheck || blackInCheck) {
+            getLineOfAttack()
         }
+
+        if (whiteInCheck && board.isCheckmate(currentWhiteKing, board, lineOfAttack)) {
+            println("Black Wins!")
+        } else if (blackInCheck && board.isCheckmate(currentBlackKing, board, lineOfAttack)) {
+            println("White Wins!")
+        }
+
+        println("♔ White King @ ${currentWhiteKing.position}, inCheck: ${currentWhiteKing.inCheck}")
+        println("♚ Black King @ ${currentBlackKing.position}, inCheck: ${currentBlackKing.inCheck}")
+        println("White In Check: $whiteInCheck, Black In Check: $blackInCheck")
+    }
+
+    private fun getLineOfAttack() {
+        when (lastMovedPiece?.type) {
+            PieceType.PAWN -> {lineOfAttack = listOf(lastMovedPiece!!.position)}
+            PieceType.KNIGHT -> {lineOfAttack = listOf(lastMovedPiece!!.position)}
+            PieceType.BISHOP -> {lineOfAttack = getBishopLOA(lastMovedPiece)}
+            PieceType.ROOK -> {lineOfAttack = getRookLOA(lastMovedPiece!!)}
+            PieceType.QUEEN -> {lineOfAttack = getQueenLOA()}
+            else -> {lineOfAttack = listOf()}
+        }
+    }
+
+    private fun getQueenLOA(): List<Position> {
+        return getBishopLOA(lastMovedPiece!!) + getRookLOA(lastMovedPiece!!)
+    }
+
+    private fun getBishopLOA(piece: ChessPiece?): List<Position> {
+        val lineOfAttack: MutableList<Position> = mutableListOf()
+        val piecePosition = piece!!.position
+        val kingPosition = if(whiteInCheck) whiteKing!!.position else blackKing!!.position
+
+        when {
+            piecePosition.row < kingPosition.row && piecePosition.col < kingPosition.col -> {
+                for (i in 1 until (kingPosition.row - piecePosition.row)) {
+                    lineOfAttack.add(Position(piecePosition.row + i, piecePosition.col + i, FieldState.VALID))
+                }
+                lineOfAttack.add(piecePosition)
+            }
+
+            piecePosition.row < kingPosition.row && piecePosition.col > kingPosition.col -> {
+                for (i in 1 until (kingPosition.row - piecePosition.row)) {
+                    lineOfAttack.add(Position(piecePosition.row + i, piecePosition.col - i, FieldState.VALID))
+                }
+                lineOfAttack.add(piecePosition)
+            }
+
+            piecePosition.row > kingPosition.row && piecePosition.col < kingPosition.col -> {
+                for (i in 1 until (piecePosition.row - kingPosition.row)) {
+                    lineOfAttack.add(Position(piecePosition.row - i, piecePosition.col + i, FieldState.VALID))
+                }
+                lineOfAttack.add(piecePosition)
+            }
+
+            piecePosition.row > kingPosition.row && piecePosition.col > kingPosition.col -> {
+                for (i in 1 until (piecePosition.row - kingPosition.row)) {
+                    lineOfAttack.add(Position(piecePosition.row - i, piecePosition.col - i, FieldState.VALID))
+                }
+                lineOfAttack.add(piecePosition)
+            }
+        }
+        return lineOfAttack
+    }
+
+    private fun getRookLOA(piece: ChessPiece): List<Position> {
+        val lineOfAttack: MutableList<Position> = mutableListOf()
+        val piecePosition = piece.position
+        val kingPosition = if(whiteInCheck) whiteKing!!.position else blackKing!!.position
+
+        when {
+            piecePosition.row == kingPosition.row -> {
+                //rook on left of king
+                if(piecePosition.col < kingPosition.col) {
+                    for (i in piecePosition.col + 1 until kingPosition.col) {
+                        lineOfAttack.add(Position(piecePosition.row, i, FieldState.VALID))
+                    }
+                    lineOfAttack.add(piecePosition)
+                }
+                //rook on right of king
+                else {
+                    for (i in piecePosition.col - 1 downTo kingPosition.col) {
+                        lineOfAttack.add(Position(piecePosition.row, i, FieldState.VALID))
+                    }
+                    lineOfAttack.add(piecePosition)
+                }
+            }
+
+            piecePosition.col == kingPosition.col -> {
+                //rook on top of king
+                if(piecePosition.row < kingPosition.row) {
+                    for (i in piecePosition.row + 1 until kingPosition.row) {
+                        lineOfAttack.add(Position(i, piecePosition.col, FieldState.VALID))
+                    }
+                    lineOfAttack.add(piecePosition)
+                }
+                //rook on bottom of king
+                else {
+                    for (i in piecePosition.row - 1 downTo kingPosition.row) {
+                        lineOfAttack.add(Position(i, piecePosition.col, FieldState.VALID))
+                    }
+                    lineOfAttack.add(piecePosition)
+                }
+            }
+        }
+        return lineOfAttack.filter { 0 <= it.row && it.row < 8 && 0 <= it.col && it.col < 8 } ?: listOf()
     }
 
     private fun _isPromotionPossible(piece: ChessPiece?, clickedSquare: Position?): Boolean {
         return when {
             piece == null || clickedSquare == null -> false
-            piece.type == PieceType.PAWN && piece.movesMade >= 4 && (clickedSquare.row == 0 || clickedSquare.row == 7) ->
-                piece.isWhite() && piece.position.row == 6 ||
-                        !piece.isWhite() && piece.position.row == 1
+            piece.type == PieceType.PAWN && piece.movesMade >= 4 && (clickedSquare.row == 0 || clickedSquare.row == 7) -> piece.isWhite() && piece.position.row == 6 || !piece.isWhite() && piece.position.row == 1
 
             else -> false
         }
@@ -110,75 +216,21 @@ class BoardViewModel @Inject constructor(
         get() = _isPromotionPossible(selectedPiece, clickedSquare)
 
     fun handleSquareClick(row: Int, col: Int) {
+
         clickedSquare = Position(row, col, FieldState.EMPTY)
         val clickedPiece = this.boardArray[row][col]
+        if (clickedPiece == selectedPiece) {selectedPiece = clickedPiece; return }
 
-        if (clickedPiece == selectedPiece) {
-            selectedPiece = clickedPiece
-            return
-        }
-
-        if (!_isPromotionPossible(selectedPiece, clickedSquare)) {
+        if(!_isPromotionPossible(selectedPiece, clickedSquare)) {
             when {
-                (selectedPiece != null && clickedPiece == null && possibleMoves.contains(
-                    Position(
-                        row,
-                        col,
-                        FieldState.VALID
-                    )
-                )) -> {
 
-                    board.move(
-                        selectedPiece!!,
-                        Position(row, col, FieldState.VALID),
-                        whiteInCheck,
-                        blackInCheck
-                    )
-                    checkCheckCheck()
-                    val colorInCheck: PieceColor? =
-                        if (whiteInCheck) PieceColor.WHITE else if (blackInCheck) PieceColor.BLACK else null
-                    logAction(
-                        Action(
-                            selectedPiece!!,
-                            ActionType.MOVE,
-                            time = System.currentTimeMillis(),
-                            originalPosition = selectedPiece!!.position,
-                            Position(row + 1, col, FieldState.VALID),
-                            null,
-                            null,
-                            null,
-                            colorInCheck
-                        )
-                    )
-                    changeTurn()
-                }
+                selectedPiece != null && clickedPiece == null && possibleMoves.contains(
+                    Position(row, col, FieldState.VALID)
+                ) -> { executeMove(row, col) }
 
                 (selectedPiece != null && clickedPiece != null && possibleMoves.contains(
-                    Position(
-                        row,
-                        col,
-                        FieldState.ATTACK
-                    )
-                )) -> {
-                    board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
-                    checkCheckCheck()
-                    val colorInCheck: PieceColor? =
-                        if (whiteInCheck) PieceColor.WHITE else if (blackInCheck) PieceColor.BLACK else null
-                    logAction(
-                        Action(
-                            selectedPiece!!,
-                            ActionType.ATTACK,
-                            time = System.currentTimeMillis(),
-                            originalPosition = selectedPiece!!.position,
-                            Position(row, col, FieldState.ATTACK),
-                            killedPiece = clickedPiece,
-                            null,
-                            null,
-                            colorInCheck = colorInCheck
-                        )
-                    )
-                    changeTurn()
-                }
+                    Position(row, col, FieldState.ATTACK)
+                )) -> { executeAttack(row, col, clickedPiece) }
 
                 else -> {
                     selectPiece(clickedPiece)
@@ -186,24 +238,91 @@ class BoardViewModel @Inject constructor(
                         if (clickedPiece?.color == selectedPiece?.color) clickedPiece else selectedPiece
 
                     val params = MovePieceUseCase.Params.create(
-                        piece = updatedSelectedPiece,
-                        board = board,
-                        whiteInCheck,
-                        blackInCheck
+                        piece = updatedSelectedPiece, board = board, whiteInCheck, blackInCheck, lineOfAttack
                     )
-                    ioToUi(
-                        io = { movePieceUseCase.execute(params) },
-                        ui = {
-                            possibleMoves = checkMoveParser(
-                                whiteInCheck,
-                                blackInCheck,
-                                updatedSelectedPiece?.getPossibleMoves(board) ?: emptyList()
-                            )
-                        }
-                    )
+                    ioToUi(io = { movePieceUseCase.execute(params) }, ui = {
+                        possibleMoves = checkMoveParser(
+                            whiteInCheck,
+                            blackInCheck,
+                            updatedSelectedPiece?.getPossibleMoves(board) ?: emptyList()
+                        )
+                    })
                 }
             }
+            checkCheckCheck()
         }
+    }
+
+    private fun executeMove(row: Int, col: Int) {
+        val oldPosition = selectedPiece?.position
+
+        val isCastle = board.move(
+            selectedPiece!!,
+            Position(row, col, FieldState.VALID),
+            whiteInCheck,
+            blackInCheck
+        )
+        lastMovedPiece = selectedPiece
+        checkCheckCheck()
+        val colorInCheck: PieceColor? =
+            if (whiteInCheck) PieceColor.WHITE else if (blackInCheck) PieceColor.BLACK else null
+
+        if (isCastle) {
+            logAction(
+                Action(
+                    turnId = actionList.value.size + 1,
+                    selectedPiece!!,
+                    ActionType.CASTLE,
+                    time = System.currentTimeMillis(),
+                    originalPosition = selectedPiece!!.position,
+                    Position(row + 1, col, FieldState.VALID),
+                    null,
+                    null,
+                    col < oldPosition!!.col,
+                    colorInCheck
+                )
+            )
+        } else {
+            logAction(
+                Action(
+                    turnId = actionList.value.size + 1,
+                    selectedPiece!!,
+                    ActionType.MOVE,
+                    time = System.currentTimeMillis(),
+                    originalPosition = oldPosition!!,
+                    Position(row + 1, col, FieldState.VALID),
+                    null,
+                    null,
+                    null,
+                    colorInCheck
+                )
+            )
+        }
+        changeTurn()
+    }
+
+    private fun executeAttack(row: Int, col: Int, clickedPiece: ChessPiece?) {
+        val oldPosition = selectedPiece?.position
+        board.attack(selectedPiece!!, Position(row, col, FieldState.ATTACK))
+        lastMovedPiece = selectedPiece
+        checkCheckCheck()
+        val colorInCheck: PieceColor? =
+            if (whiteInCheck) PieceColor.WHITE else if (blackInCheck) PieceColor.BLACK else null
+        logAction(
+            Action(
+                turnId = actionList.value.size + 1,
+                selectedPiece!!,
+                ActionType.ATTACK,
+                time = System.currentTimeMillis(),
+                originalPosition = oldPosition!!,
+                Position(row, col, FieldState.ATTACK),
+                killedPiece = clickedPiece,
+                null,
+                null,
+                colorInCheck = colorInCheck
+            )
+        )
+        changeTurn()
     }
 
     private fun checkMoveParser(
@@ -213,16 +332,26 @@ class BoardViewModel @Inject constructor(
     ): List<Position> {
         println("Before filtering: ${possibleMoves.size} moves available for ${selectedPiece?.type}")
 
+        val attackerPosition = lastMovedPiece?.position
+        val isKing = selectedPiece == whiteKing || selectedPiece == blackKing
+
         val filteredMoves = when {
-            whiteInCheck && selectedPiece != whiteKing -> {
-                possibleMoves.filter { board.blockCheck(selectedPiece, whiteKing!!, it, board) }
+            whiteInCheck && !isKing -> {
+                possibleMoves.filter {
+                    (board.blockCheck(it, lineOfAttack) ||
+                            (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col))
+                }
+            }
+//TODO xray isnt filtering properly for bishop when king attacking piece guarded by bishop, works for pawns tho
+            blackInCheck && !isKing -> {
+                possibleMoves.filter {
+                    board.blockCheck(it, lineOfAttack) ||
+                            (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col)
+                }
             }
 
-            blackInCheck && selectedPiece != blackKing -> {
-                possibleMoves.filter { board.blockCheck(selectedPiece, blackKing!!, it, board) }
-            }
-
-            else -> possibleMoves.filter { board.xrayCheck(selectedPiece, it, board) }
+            isKing -> possibleMoves.filter { board.xrayCheck(selectedPiece, it, board) }
+            else -> possibleMoves.filter { board.isLegalMove(selectedPiece!!, it) }
         }
 
         println("After filtering: ${filteredMoves.size} moves remain for ${selectedPiece?.type}")

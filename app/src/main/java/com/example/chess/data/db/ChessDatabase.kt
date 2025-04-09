@@ -10,7 +10,7 @@ import com.example.chess.data.db.entity.ActionEntity
 
 @Database(
     entities = [ActionEntity::class],
-    version = 2,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

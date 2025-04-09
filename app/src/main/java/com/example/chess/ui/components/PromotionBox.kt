@@ -52,6 +52,7 @@ fun PromotionBox(
 
         viewModel.logAction(
             Action(
+                turnId = viewModel.actionList.value.size + 1,
                 selectedPiece,
                 ActionType.PROMOTION,
                 time = System.currentTimeMillis(),

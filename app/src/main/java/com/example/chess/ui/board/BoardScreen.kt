@@ -77,7 +77,7 @@ fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                modifier = Modifier.padding(top = 50.dp).align(Alignment.CenterHorizontally),
+                modifier = Modifier.padding(top = 30.dp).align(Alignment.CenterHorizontally),
                 text = stringResource(R.string.app_title),
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,

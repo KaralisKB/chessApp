@@ -21,7 +21,8 @@ interface ChessPiece {
     suspend fun getPossibleMoves(
         boardState: BoardState,
         skippedPosition: Position? = null,
-        king: ChessPiece? = null
+        king: ChessPiece? = null,
+        lineOfAttack: List<Position>? = null
     ): List<Position>?
 
     suspend fun getPotentialMoves(boardState: BoardState): List<Pair<Int, Int>>

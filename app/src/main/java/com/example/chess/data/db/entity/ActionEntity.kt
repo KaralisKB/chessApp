@@ -9,6 +9,7 @@ import com.example.chess.ui.components.PieceType
 @Entity(tableName = "actions")
 data class ActionEntity (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val turnId: Int,
     val originalPieceType: PieceType,
     val originalPieceColor: PieceColor,
     val actionType: ActionType,

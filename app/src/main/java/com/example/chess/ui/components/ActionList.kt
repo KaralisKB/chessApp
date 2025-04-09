@@ -64,7 +64,7 @@ fun ActionList(actionList: List<Action?>) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .height(320.dp)
+            .height(290.dp)
             .border(
                 width = 4.dp,
                 color = Color.White,
@@ -77,7 +77,7 @@ fun ActionList(actionList: List<Action?>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Jade)
-                .padding(vertical = 4.dp)
+                .padding(vertical = 8.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
             Text(
@@ -92,16 +92,16 @@ fun ActionList(actionList: List<Action?>) {
             state = listState,
             modifier = Modifier.padding(4.dp)
         ) {
-            var actionNumber = 1
+
             items(actionList) { action ->
                 when (action?.type) {
-                    ActionType.MOVE -> MoveActionEntry(action, actionNumber)
-                    ActionType.ATTACK -> AttackActionEntry(action, actionNumber)
-                    ActionType.CASTLE -> CastleActionEntry(action, actionNumber)
-                    ActionType.PROMOTION -> PromotionActionEntry(action, actionNumber)
+                    ActionType.MOVE -> MoveActionEntry(action)
+                    ActionType.ATTACK -> AttackActionEntry(action)
+                    ActionType.CASTLE -> CastleActionEntry(action)
+                    ActionType.PROMOTION -> PromotionActionEntry(action)
                     null -> null
                 }
-                actionNumber++
+
             }
         }
     }
@@ -110,18 +110,18 @@ fun ActionList(actionList: List<Action?>) {
 // todo( CONDENSE
 
 @Composable
-fun MoveActionEntry(action: Action, actionNumber: Int) {
+fun MoveActionEntry(action: Action) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(horizontal = 2.dp, vertical = 4.dp)
             .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.padding(4.dp)) {
+        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
             Text(
-                text = actionNumber.toString(),
-                fontWeight = FontWeight.Bold
+                text = action.turnId.toString(),
+                fontWeight = FontWeight.Bold,
             )
         }
         Image(
@@ -158,25 +158,25 @@ fun MoveActionEntry(action: Action, actionNumber: Int) {
         }
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            modifier = Modifier.padding(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp),
             text = GameTimer.getElapsedTime(action.time)
         )
     }
 }
 
 @Composable
-fun AttackActionEntry(action: Action, actionNumber: Int) {
+fun AttackActionEntry(action: Action) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(horizontal = 2.dp, vertical = 4.dp)
             .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.padding(4.dp)) {
+        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
             Text(
-                text = actionNumber.toString(),
-                fontWeight = FontWeight.Bold
+                text = action.turnId.toString(),
+                fontWeight = FontWeight.Bold,
             )
         }
         Image(
@@ -227,31 +227,41 @@ fun AttackActionEntry(action: Action, actionNumber: Int) {
         }
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            modifier = Modifier.padding(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp),
             text = GameTimer.getElapsedTime(action.time)
         )
     }
 }
 
 @Composable
-fun CastleActionEntry(action: Action, actionNumber: Int) {
+fun CastleActionEntry(action: Action) {
     val arrow = if (action.castleIsLong == true) " <-" else " ->"
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(horizontal = 2.dp, vertical = 4.dp)
             .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = actionNumber.toString(),
-            fontWeight = FontWeight.Bold
-        )
+        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+            Text(
+                text = action.turnId.toString(),
+                fontWeight = FontWeight.Bold,
+            )
+        }
         Image(
             painter = painterResource(id = getImageId(piece = action.originalPiece)),
             contentDescription = action.originalPiece.type.toString(),
             modifier = Modifier
                 .size(30.dp)
+        )
+        Text(
+            text = stringResource(
+                R.string.move,
+                toLetter(action.originalPosition.col),
+                action.originalPosition.row + 1
+            ),
+            fontWeight = FontWeight.Bold
         )
         ActionLottie(Modifier.size(40.dp), R.raw.castle_icon, 1f)
         Text(
@@ -260,25 +270,27 @@ fun CastleActionEntry(action: Action, actionNumber: Int) {
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            modifier = Modifier.padding(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp),
             text = GameTimer.getElapsedTime(action.time)
         )
     }
 }
 
 @Composable
-fun PromotionActionEntry(action: Action, actionNumber: Int) {
+fun PromotionActionEntry(action: Action) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(horizontal = 2.dp, vertical = 4.dp)
             .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = actionNumber.toString(),
-            fontWeight = FontWeight.Bold
-        )
+        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+            Text(
+                text = action.turnId.toString(),
+                fontWeight = FontWeight.Bold,
+            )
+        }
         Image(
             painter = painterResource(id = getImageId(piece = action.originalPiece)),
             contentDescription = action.originalPiece.type.toString(),
@@ -310,59 +322,12 @@ fun PromotionActionEntry(action: Action, actionNumber: Int) {
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            modifier = Modifier.padding(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp),
             text = GameTimer.getElapsedTime(action.time)
         )
     }
 }
 
-//@Composable
-//fun CheckActionEntry(action: Action, actionNumber: Int) {
-//
-//
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(4.dp)
-//            .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        Text(
-//            text = actionNumber.toString(),
-//            fontWeight = FontWeight.Bold
-//        )
-//        Image(
-//            painter = painterResource(id = getImageId(piece = action.originalPiece)),
-//            contentDescription = action.originalPiece.type.toString(),
-//            modifier = Modifier
-//                .size(30.dp)
-//        )
-//        ActionLottie(Modifier.size(40.dp), R.raw.move_icon, 1f)
-//        Text(
-//            text = stringResource(
-//                R.string.move,
-//                toLetter(action.newPosition.col),
-//                action.newPosition.row
-//            ),
-//            fontWeight = FontWeight.Bold
-//        )
-//        if(action.colorInCheck != null) {
-//            Spacer(modifier = Modifier.weight(1f))
-//            Image(
-//                painter = painterResource(id = getImageId(kingInCheck)),
-//                contentDescription = action.originalPiece.type.toString(),
-//                modifier = Modifier
-//                    .size(30.dp)
-//            )
-//            ActionLottie(Modifier.size(40.dp), R.raw.check_icon, 1f)
-//        }
-//        Spacer(modifier = Modifier.weight(1f))
-//        Text(
-//            modifier = Modifier.padding(4.dp),
-//            text = GameTimer.getElapsedTime(action.time)
-//        )
-//    }
-//}
 
 fun getImageId(piece: ChessPiece): Int {
     val res: Int

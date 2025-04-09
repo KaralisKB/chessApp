@@ -1,5 +1,6 @@
 package com.example.chess.local.model
 
+import androidx.compose.foundation.text2.input.TextFieldLineLimits
 import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
@@ -31,7 +32,7 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
                 when (piece.type) {
                     PieceType.PAWN -> (piece as Pawn).getAttackMoves(boardState)
                     PieceType.KING -> emptyList()
-                    else -> piece.getPossibleMoves(boardState, this@King.position) ?: emptyList()
+                    else -> piece.getPossibleMoves(boardState, null) ?: emptyList()
                 }
             }
         }
@@ -52,8 +53,9 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
     override suspend fun getPossibleMoves(
         boardState: BoardState,
         skippedPosition: Position?,
-        king: ChessPiece?
-    ): List<Position> = withContext(Dispatchers.Default) {
+        king: ChessPiece?,
+        lineOfAttack: List<Position>?
+    ): List<Position>? = withContext(Dispatchers.Default) {
         val potentialMoves = getPotentialMoves(boardState)
         val allEnemyMoves = async { getEnemyMoves(boardState) }.await()
         val possibleMoves = mutableSetOf<Position>()
@@ -75,10 +77,8 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
                         Position(move, FieldState.BLOCKED)
 
                     movementType != 0 && (king == null || !king.inCheck || boardState.blockCheck(
-                        this@King,
-                        king,
                         movePosition,
-                        boardState
+                        lineOfAttack!!
                     )) -> {
                         when (movementType) {
                             1 -> Position(move, FieldState.VALID)
@@ -175,4 +175,6 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
     override fun getImage(): Int {
         return if (color == PieceColor.WHITE) R.drawable.chess_klt60 else R.drawable.chess_kdt60
     }
+
+
 }

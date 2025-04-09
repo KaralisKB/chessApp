@@ -16,23 +16,26 @@ class MovePieceUseCase @Inject constructor() : UseCaseParams<MovePieceUseCase.Pa
         val piece: ChessPiece?,
         val board: BoardState,
         val isWhiteKingAttacked: Boolean,
-        val isBlackKingAttacked: Boolean
+        val isBlackKingAttacked: Boolean,
+        val lineOfAttack: List<Position>
     ) {
         companion object {
             fun create(
                 piece: ChessPiece?,
                 board: BoardState,
                 isWhiteKingAttacked: Boolean,
-                isBlackKingAttacked: Boolean
-            ): Params = Params(piece, board, isWhiteKingAttacked, isBlackKingAttacked)
+                isBlackKingAttacked: Boolean,
+                lineOfAttack: List<Position>
+            ): Params = Params(piece, board, isWhiteKingAttacked, isBlackKingAttacked, lineOfAttack)
         }
     }
 
     override suspend fun execute(data: Params): List<Position> {
         val movements = data.piece?.getPossibleMoves(data.board, null) ?: listOf()
+        val lineOfAttack = data.lineOfAttack
 
         return if (data.isWhiteKingAttacked || data.isBlackKingAttacked) {
-            blockAttackMove(data, movements)
+            blockAttackMove(data, movements, lineOfAttack)
         } else {
             movements
         }
@@ -42,6 +45,7 @@ class MovePieceUseCase @Inject constructor() : UseCaseParams<MovePieceUseCase.Pa
     private suspend fun blockAttackMove(
         data: Params,
         possibleMoves: List<Position>,
+        lineOfAttack: List<Position>
     ): List<Position> {
         with(data) {
             return when {
@@ -53,7 +57,7 @@ class MovePieceUseCase @Inject constructor() : UseCaseParams<MovePieceUseCase.Pa
                     }
 
                     return possibleMoves.filter { move ->
-                        val doesBlock = board.blockCheck(piece, targetedKing ?: return emptyList(), move, board)
+                        val doesBlock = board.blockCheck(move,lineOfAttack)
                         println("Checking move ${move.row},${move.col} for ${piece?.type}: Blocks Check? $doesBlock")
                         doesBlock
                     }

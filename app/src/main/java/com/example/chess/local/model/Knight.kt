@@ -20,7 +20,8 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
     override suspend fun getPossibleMoves(
         boardState: BoardState,
         skippedPosition: Position?,
-        king: ChessPiece?
+        king: ChessPiece?,
+        lineOfAttack: List<Position>?
     ): List<Position> {
         val possibleMoves: MutableList<Position> = mutableListOf()
         val potentialMoves = getPotentialMoves(boardState)
@@ -85,4 +86,5 @@ class Knight(override val color: PieceColor, startPosition: Position) : ChessPie
     override fun getImage(): Int {
         if (color == PieceColor.WHITE) return R.drawable.chess_nlt60 else return R.drawable.chess_ndt60
     }
+
 }
