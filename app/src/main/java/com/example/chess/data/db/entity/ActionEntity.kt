@@ -1,14 +1,26 @@
 package com.example.chess.data.db.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.chess.local.model.ActionType
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 
-@Entity(tableName = "actions")
+@Entity(tableName = "actions", foreignKeys = [
+    ForeignKey(
+        entity = GameEntity::class,
+        parentColumns = ["gameId"],
+        childColumns = ["gameId"],
+        onDelete = ForeignKey.CASCADE
+    )],
+    indices = [
+        Index(value = ["gameId"])
+    ])
 data class ActionEntity (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val gameId: Int,
     val turnId: Int,
     val originalPieceType: PieceType,
     val originalPieceColor: PieceColor,

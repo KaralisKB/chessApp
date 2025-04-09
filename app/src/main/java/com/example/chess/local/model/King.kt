@@ -1,6 +1,5 @@
 package com.example.chess.local.model
 
-import androidx.compose.foundation.text2.input.TextFieldLineLimits
 import com.example.chess.R
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor

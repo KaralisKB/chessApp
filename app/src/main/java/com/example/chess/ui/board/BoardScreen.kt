@@ -45,7 +45,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.chess.R
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
@@ -62,8 +64,9 @@ import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
 
 
+
 @Composable
-fun BoardScreen(viewModel: BoardViewModel = viewModel()) {
+fun BoardScreen(navController: NavController, viewModel: BoardViewModel = hiltViewModel()) {
     val actionList by viewModel.actionList.collectAsState()
     Box(
         modifier = Modifier
@@ -246,10 +249,4 @@ fun BoardLabel(text: String, modifier: Modifier = Modifier) {
             .wrapContentHeight(Alignment.CenterVertically)
             .fillMaxWidth()
     )
-}
-
-@Preview
-@Composable
-private fun BoardPreview() {
-    BoardScreen()
 }

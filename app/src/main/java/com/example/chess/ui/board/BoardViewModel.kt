@@ -41,7 +41,7 @@ class BoardViewModel @Inject constructor(
     var board by mutableStateOf(BoardState())
     var clickedSquare by mutableStateOf<Position?>(null)
     var lineOfAttack by mutableStateOf<List<Position>>(listOf())
-    var lastMovedPiece by mutableStateOf<ChessPiece?>(null)
+    private var lastMovedPiece by mutableStateOf<ChessPiece?>(null)
     private var whiteInCheck by mutableStateOf(false)
     private var blackInCheck by mutableStateOf(false)
     private val whiteKing: ChessPiece?
@@ -58,7 +58,7 @@ class BoardViewModel @Inject constructor(
         changeTurn()
     }
 
-    fun deleteAction() = ioToUnit {
+    private fun deleteAction() = ioToUnit {
         clearActionsUseCase.execute()
     }
 
@@ -200,7 +200,7 @@ class BoardViewModel @Inject constructor(
                 }
             }
         }
-        return lineOfAttack.filter { 0 <= it.row && it.row < 8 && 0 <= it.col && it.col < 8 } ?: listOf()
+        return lineOfAttack.filter { it.row in 0..7 && it.col in 0..7 } ?: listOf()
     }
 
     private fun _isPromotionPossible(piece: ChessPiece?, clickedSquare: Position?): Boolean {
@@ -271,6 +271,7 @@ class BoardViewModel @Inject constructor(
             logAction(
                 Action(
                     turnId = actionList.value.size + 1,
+                    gameId = 1, // TODO Make this gameId auto become the current games id from db
                     selectedPiece!!,
                     ActionType.CASTLE,
                     time = System.currentTimeMillis(),
@@ -286,6 +287,7 @@ class BoardViewModel @Inject constructor(
             logAction(
                 Action(
                     turnId = actionList.value.size + 1,
+                    gameId = 1, // TODO Make this gameId auto become the current games id from db
                     selectedPiece!!,
                     ActionType.MOVE,
                     time = System.currentTimeMillis(),
@@ -311,6 +313,7 @@ class BoardViewModel @Inject constructor(
         logAction(
             Action(
                 turnId = actionList.value.size + 1,
+                gameId = 1, // TODO Make this gameId auto become the current games id from db
                 selectedPiece!!,
                 ActionType.ATTACK,
                 time = System.currentTimeMillis(),

@@ -53,6 +53,7 @@ fun PromotionBox(
         viewModel.logAction(
             Action(
                 turnId = viewModel.actionList.value.size + 1,
+                gameId = 1, // TODO Make this gameId auto become the current games id from db
                 selectedPiece,
                 ActionType.PROMOTION,
                 time = System.currentTimeMillis(),

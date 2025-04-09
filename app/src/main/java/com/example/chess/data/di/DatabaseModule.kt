@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.chess.data.db.dao.ActionDao
 import com.example.chess.data.db.ChessDatabase
+import com.example.chess.data.db.dao.GameDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,4 +29,7 @@ object DatabaseModule {
 
     @Provides
     fun provideActionDao(db: ChessDatabase): ActionDao = db.actionDao()
+
+    @Provides
+    fun provideGameDao(db: ChessDatabase): GameDao = db.gameDao()
 }

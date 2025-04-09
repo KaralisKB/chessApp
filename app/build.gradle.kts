@@ -60,6 +60,9 @@ dependencies {
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+
 
     // Hilt (Updated to latest version)
     implementation(libs.hilt.android)

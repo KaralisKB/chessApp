@@ -213,7 +213,7 @@ data class BoardState(
     }
 
     fun blockCheck(proposedBlock: Position, lineOfAttack: List<Position>): Boolean {
-        val isBlock = if (proposedBlock in lineOfAttack) true else false
+        val isBlock = proposedBlock in lineOfAttack
         return isBlock
     }
 

@@ -15,6 +15,7 @@ import com.example.chess.ui.components.PieceType
 fun Action.toEntity(): ActionEntity {
     return ActionEntity(
         turnId = turnId,
+        gameId = gameId,
         originalPieceType = originalPiece.type,
         originalPieceColor = originalPiece.color,
         actionType = type,
@@ -27,7 +28,7 @@ fun Action.toEntity(): ActionEntity {
         killedPieceColor = killedPiece?.color,
         promotedPieceType = promotedToPiece?.type,
         castleIsLong = castleIsLong,
-        colorInCheck = colorInCheck,
+        colorInCheck = colorInCheck
     )
 }
 
@@ -35,6 +36,7 @@ fun ActionEntity.toAction(): Action {
     return Action(
 
         turnId = turnId,
+        gameId = gameId,
         originalPiece = when (originalPieceType) {
             PieceType.PAWN -> Pawn(originalPieceColor, Position(fromRow, fromCol, FieldState.EMPTY))
             PieceType.KNIGHT -> Knight(originalPieceColor, Position(fromRow, fromCol, FieldState.EMPTY))
