@@ -76,10 +76,10 @@ class King(override val color: PieceColor, startPosition: Position) : ChessPiece
                     allEnemyMoves.any { position -> position.isValidMove(move) } && movementType != 0 ->
                         Position(move, FieldState.BLOCKED)
 
-                    movementType != 0 && (king == null || !king.inCheck || boardState.blockCheck(
+                    movementType != 0 && (king == null || !king.inCheck || (lineOfAttack != null && boardState.blockCheck(
                         movePosition,
-                        lineOfAttack!!
-                    )) -> {
+                        lineOfAttack
+                    ))) -> {
                         when (movementType) {
                             1 -> Position(move, FieldState.VALID)
                             2 -> Position(move, FieldState.ATTACK)

@@ -97,16 +97,6 @@ class Pawn(override val color: PieceColor, startPosition: Position): ChessPiece 
         )
 
         return attackMoves
-
-//        val attackMoves = getPotentialMoves(boardState)
-//            .fold<Pair<Int, Int>, MutableSet<Position>>(mutableSetOf()) { acc, move ->
-//                val isValid = getMovementType(move, boardState)
-//                if (isValid == 2 || isValid == 0) acc.add(Position(move, FieldState.ATTACK))
-//
-//                acc
-//            }.toList()
-//
-//        return attackMoves
     }
 
     override fun getImage(): Int {

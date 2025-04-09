@@ -217,48 +217,6 @@ data class BoardState(
         return isBlock
     }
 
-    fun xrayCheck(selectedPiece: ChessPiece?, proposedMove: Position, state: BoardState): Boolean {
-
-        if (selectedPiece == null) return false
-
-        val oldPosition = selectedPiece.position
-        val tempBoard = BoardState(
-            board = state.board.map { it.clone() }.toTypedArray()
-        )
-
-        tempBoard.board[proposedMove.row][proposedMove.col] = selectedPiece
-        tempBoard.board[oldPosition.row][oldPosition.col] = null
-        selectedPiece.position = proposedMove
-
-        if (selectedPiece.type == PieceType.KING && selectedPiece.color == PieceColor.WHITE) {
-            tempBoard.whiteKing = selectedPiece
-        } else { tempBoard.blackKing = selectedPiece }
-
-        if (selectedPiece.type == PieceType.KING) {
-            val isKingSafe = when (selectedPiece.color) {
-                PieceColor.WHITE -> {
-                    !tempBoard.checkCheck(tempBoard.whiteKing ?: return false, tempBoard).first
-                }
-                PieceColor.BLACK -> {
-                    !tempBoard.checkCheck(tempBoard.blackKing ?: return false, tempBoard).second
-                }
-            }
-
-            selectedPiece.position = oldPosition
-
-            val targetSquare = state.board[proposedMove.row][proposedMove.col]
-            if (targetSquare != null && targetSquare.color == selectedPiece.color) {
-                return false
-            }
-            if (!isKingSafe) {
-                proposedMove.type = FieldState.BLOCKED
-            }
-            return true
-        }
-        selectedPiece.position = oldPosition
-        return true
-    }
-
     fun isLegalMove(piece: ChessPiece, to: Position): Boolean {
         val from = piece.position
         val targetPiece = board[to.row][to.col]

@@ -328,35 +328,40 @@ class BoardViewModel @Inject constructor(
     private fun checkMoveParser(
         whiteInCheck: Boolean,
         blackInCheck: Boolean,
-        possibleMoves: List<Position>
+        allPossibleMoves: List<Position>
     ): List<Position> {
-        println("Before filtering: ${possibleMoves.size} moves available for ${selectedPiece?.type}")
-
         val attackerPosition = lastMovedPiece?.position
         val isKing = selectedPiece == whiteKing || selectedPiece == blackKing
 
-        val filteredMoves = when {
+        val validCandidates = when {
             whiteInCheck && !isKing -> {
-                possibleMoves.filter {
-                    (board.blockCheck(it, lineOfAttack) ||
-                            (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col))
-                }
-            }
-//TODO xray isnt filtering properly for bishop when king attacking piece guarded by bishop, works for pawns tho
-            blackInCheck && !isKing -> {
-                possibleMoves.filter {
+                allPossibleMoves.filter {
                     board.blockCheck(it, lineOfAttack) ||
                             (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col)
                 }
             }
-
-            isKing -> possibleMoves.filter { board.xrayCheck(selectedPiece, it, board) }
-            else -> possibleMoves.filter { board.isLegalMove(selectedPiece!!, it) }
+            blackInCheck && !isKing -> {
+                allPossibleMoves.filter {
+                    board.blockCheck(it, lineOfAttack) ||
+                            (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col)
+                }
+            }
+            else -> allPossibleMoves
         }
 
-        println("After filtering: ${filteredMoves.size} moves remain for ${selectedPiece?.type}")
-        return filteredMoves
+        return if (isKing) {
+            validCandidates.map { move ->
+                if (board.isLegalMove(selectedPiece!!, move)) {
+                    move
+                } else {
+                    move.copy(type = FieldState.BLOCKED)
+                }
+            }
+        } else {
+            validCandidates.filter { board.isLegalMove(selectedPiece!!, it) }
+        }
     }
+
 
     fun logAction(action: Action) {
         viewModelScope.launch {
