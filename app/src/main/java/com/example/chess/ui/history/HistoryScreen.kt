@@ -54,25 +54,25 @@ fun HistoryScreen(
             modifier = Modifier.background(Color(0xFFF2EFE7))
         ) {
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
             item {
-                GameHistoryCard()
+                GameHistoryCard(null, null, null, null, null, null, null)
             }
         }
     }
