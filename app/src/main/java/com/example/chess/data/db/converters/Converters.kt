@@ -2,6 +2,7 @@ package com.example.chess.data.db.converters
 
 import androidx.room.TypeConverter
 import com.example.chess.local.model.ActionType
+import com.example.chess.local.model.GameType
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 
@@ -24,5 +25,9 @@ class Converters {
     @TypeConverter
     fun toActionType(value: String?): ActionType? = value?.let { ActionType.valueOf(it) }
 
+    @TypeConverter
+    fun fromGameType(value: GameType?): String? = value?.name
 
+    @TypeConverter
+    fun toGameType(value: String?): GameType? = value?.let { GameType.valueOf(it) }
 }

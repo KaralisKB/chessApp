@@ -249,23 +249,25 @@ data class BoardState(
         return !inCheck
     }
 
-    fun isCheckmate(king: ChessPiece, boardState: BoardState, lineOfAttack: List<Position>): Boolean {
+    suspend fun isCheckmate(king: ChessPiece, boardState: BoardState, lineOfAttack: List<Position>): Boolean {
         if (!king.inCheck) return false
 
-        var possibleMoves: List<Position>? = null
-        boardStateScope.launch { possibleMoves = king.getPossibleMoves(boardState, null) }
-        if (possibleMoves != null)
-            if (possibleMoves!!.any { it.type == FieldState.VALID || it.type == FieldState.ATTACK }) return false
+        val kingMoves = king.getPossibleMoves(boardState, null)
+        if (kingMoves!!.any { it.type == FieldState.VALID || it.type == FieldState.ATTACK }) {
+            return false
+        }
 
-        val allPieces = boardState.board.flatten().filterNotNull()
+        val friendlyPieces = boardState.board.flatten().filterNotNull()
             .filter { it.color == king.color && it.type != PieceType.KING }
-        boardStateScope.launch(Dispatchers.Default) {
-            allPieces.any { piece ->
-                piece
-                    .getPossibleMoves(boardState, null)
-                    ?.any { move -> blockCheck( move, lineOfAttack) } ?: false
+
+        for (piece in friendlyPieces) {
+            val moves = piece.getPossibleMoves(boardState, null)
+            if (moves!!.any { move -> boardState.blockCheck(move, lineOfAttack) }) {
+                return false
             }
         }
+
         return true
     }
+
 }

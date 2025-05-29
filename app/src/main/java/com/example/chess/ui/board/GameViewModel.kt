@@ -1,10 +1,15 @@
 package com.example.chess.ui.board
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import com.example.chess.data.db.entity.GameEntity
 import com.example.chess.domain.useCase.board.MovePieceUseCase
+import com.example.chess.domain.useCase.game.CreateGameUseCase
+import com.example.chess.domain.useCase.game.EndGameUseCase
 import com.example.chess.domain.useCase.logging.ClearActionsUseCase
 import com.example.chess.domain.useCase.logging.GetActionsUseCase
 import com.example.chess.domain.useCase.logging.SaveActionUseCase
@@ -12,28 +17,44 @@ import com.example.chess.local.model.Action
 import com.example.chess.local.model.ActionType
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
+import com.example.chess.local.model.GameType
 import com.example.chess.local.model.Position
 import com.example.chess.ui.base.BaseViewModel
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
+import com.example.chess.ui.navigation.Screen
 import com.example.chess.utils.ext.isWhite
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BoardViewModel @Inject constructor(
+class GameViewModel @Inject constructor(
     private val movePieceUseCase: MovePieceUseCase,
     private val saveActionUseCase: SaveActionUseCase,
     private val getActionsUseCase: GetActionsUseCase,
-    private val clearActionsUseCase: ClearActionsUseCase
+    private val clearActionsUseCase: ClearActionsUseCase,
+    private val createGameUseCase: CreateGameUseCase,
+    private val endGameUseCase: EndGameUseCase
 ) : BaseViewModel(Dispatchers.Default) {
 
     val actionList: StateFlow<List<Action>> =
         getActionsUseCase.execute().toStateFlow(initial = listOf())
+
+    var whiteName by mutableStateOf<String?>(null)
+    var blackName by mutableStateOf<String?>(null)
+    var gameType by mutableStateOf<GameType?>(null)
+    var gameId by mutableStateOf<Long?>(null)
+
+    var navController by mutableStateOf<NavController?>(null)
+
+    private var winner by mutableStateOf<String?>(null)
+    var whiteTimeRemaining by mutableStateOf<Long?>(0L)
+    var blackTimeRemaining by mutableStateOf<Long?>(0L)
 
     var selectedPiece by mutableStateOf<ChessPiece?>(null)
     private var isWhiteTurn by mutableStateOf(true)
@@ -66,6 +87,29 @@ class BoardViewModel @Inject constructor(
         deleteAction()
     }
 
+    fun startGame(player1: String, player2: String, gameType: GameType, gameId: Long) {
+        whiteName = player1
+        blackName = player2
+        this.gameType = gameType
+        this.gameId = gameId
+
+        val initialTime = when (gameType) {
+            GameType.SIXTY -> 60 * 60_000L
+            GameType.THIRTY -> 30 * 60_000L
+            GameType.FIFTEEN -> 15 * 60_000L
+            GameType.TEN -> 10 * 60_000L
+            GameType.FIVE_THREE -> 5 * 60_000L
+            GameType.FIVE -> 5 * 60_000L
+            GameType.THREE_TWO -> 3 * 60_000L
+            GameType.THREE -> 3 * 60_000L
+            GameType.ONE -> 60_000L
+        }
+
+        whiteTimeRemaining = initialTime
+        blackTimeRemaining = initialTime
+        startClock()
+    }
+
     private fun selectPiece(selectedPiece: ChessPiece?) {
         this.selectedPiece = when (selectedPiece == null) {
             true -> null
@@ -93,19 +137,23 @@ class BoardViewModel @Inject constructor(
         whiteInCheck = whiteResult.first
         blackInCheck = blackResult.second
 
-        if(whiteInCheck || blackInCheck) {
-            getLineOfAttack()
-        }
+        if(whiteInCheck || blackInCheck) { getLineOfAttack() }
 
-        if (whiteInCheck && board.isCheckmate(currentWhiteKing, board, lineOfAttack)) {
-            println("Black Wins!")
-        } else if (blackInCheck && board.isCheckmate(currentBlackKing, board, lineOfAttack)) {
-            println("White Wins!")
-        }
+        viewModelScope.launch {
+            if (whiteInCheck && board.isCheckmate(currentWhiteKing, board, lineOfAttack)) {
 
-        println("♔ White King @ ${currentWhiteKing.position}, inCheck: ${currentWhiteKing.inCheck}")
-        println("♚ Black King @ ${currentBlackKing.position}, inCheck: ${currentBlackKing.inCheck}")
-        println("White In Check: $whiteInCheck, Black In Check: $blackInCheck")
+                winner = if (isWhiteTurn) blackName else whiteName
+                viewModelScope.launch { endGameUseCase.execute(gameId!!, winner!!, whiteTimeRemaining!!, blackTimeRemaining!!) }
+                navController?.navigate(Screen.MainMenu)
+
+            } else if (blackInCheck && board.isCheckmate(currentBlackKing, board, lineOfAttack)) {
+
+                winner = if (isWhiteTurn) blackName else whiteName
+                viewModelScope.launch { endGameUseCase.execute(gameId!!, winner!!, whiteTimeRemaining!!, blackTimeRemaining!!) }
+                navController?.navigate(Screen.MainMenu)
+
+            }
+        }
     }
 
     private fun getLineOfAttack() {
@@ -362,6 +410,38 @@ class BoardViewModel @Inject constructor(
             }
         } else {
             validCandidates.filter { board.isLegalMove(selectedPiece!!, it) }
+        }
+    }
+
+    fun forfeit() {
+        winner = if (isWhiteTurn) blackName else whiteName
+        viewModelScope.launch {
+            endGameUseCase.execute(gameId!!, winner!!, whiteTimeRemaining!!, blackTimeRemaining!!)
+        }
+    }
+
+    private fun startClock() {
+        viewModelScope.launch {
+            while (true) {
+                delay(1000L)
+                if (isWhiteTurn) {
+                    whiteTimeRemaining = (whiteTimeRemaining!! - 1000L)
+                    println("${whiteTimeRemaining}")
+                    if (whiteTimeRemaining!! < 1000L ) {
+                        try {
+                            endGameUseCase.execute(gameId!!, blackName!!, whiteTimeRemaining!!, blackTimeRemaining!!)
+                        } catch (e: Exception) {
+                            Log.e("GameViewModel", "Error in forfeit: ${e.message}")
+                        }
+                    }
+                } else {
+                    blackTimeRemaining = (blackTimeRemaining!! - 1000L)
+                    if (blackTimeRemaining!! < 1000L ) {
+                        endGameUseCase.execute(gameId!!, whiteName!!, whiteTimeRemaining!!, blackTimeRemaining!!)
+
+                    }
+                }
+            }
         }
     }
 

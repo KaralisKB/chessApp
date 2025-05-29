@@ -12,7 +12,7 @@ import com.example.chess.data.db.entity.GameEntity
 
 @Database(
     entities = [ActionEntity::class, GameEntity::class],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

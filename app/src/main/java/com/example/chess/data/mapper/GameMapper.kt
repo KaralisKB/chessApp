@@ -9,7 +9,9 @@ fun Game.toEntity(): GameEntity {
         whiteName = whiteName,
         blackName = blackName,
         winnerName = winnerName,
-        timeRemaining = timeRemaining,
+        gameType = gameType,
+        whiteTimeRemaining = whiteTimeRemaining,
+        blackTimeRemaining = blackTimeRemaining,
         date = date
     )
 }
@@ -20,7 +22,9 @@ fun GameEntity.toGame(): Game {
         whiteName = whiteName,
         blackName = blackName,
         winnerName = winnerName,
-        timeRemaining = timeRemaining,
+        gameType = gameType,
+        whiteTimeRemaining = whiteTimeRemaining ?: 0L,
+        blackTimeRemaining = blackTimeRemaining ?: 0L,
         date = date
     )
 }

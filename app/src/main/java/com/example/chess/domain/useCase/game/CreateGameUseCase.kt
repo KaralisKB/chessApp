@@ -9,6 +9,8 @@ import javax.inject.Inject
 class CreateGameUseCase @Inject constructor(
     private val repo: GameRepo
 ) {
-    suspend fun execute(game: Game): Unit = repo.createGame(game)
+    suspend fun execute(game: GameEntity): Long {
+        return repo.createGame(game)
+    }
 
 }

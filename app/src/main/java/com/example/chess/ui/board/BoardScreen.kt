@@ -1,5 +1,6 @@
 package com.example.chess.ui.board
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -21,11 +22,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,15 +46,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.chess.R
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
+import com.example.chess.local.model.Game
+import com.example.chess.local.model.GameType
 import com.example.chess.local.model.Pawn
 import com.example.chess.local.model.Position
 import com.example.chess.ui.components.ActionList
@@ -60,14 +64,29 @@ import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.Piece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PromotionBox
+import com.example.chess.ui.navigation.Screen
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.ext.getStateColor
 
 
 
 @Composable
-fun BoardScreen(navController: NavController, viewModel: BoardViewModel = hiltViewModel()) {
+fun BoardScreen(
+    navController: NavController,
+    player1: String,
+    player2: String,
+    gameType: GameType,
+    gameId: Long,
+    viewModel: GameViewModel = hiltViewModel()) {
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.startGame(player1, player2, gameType, gameId)
+        viewModel.navController = navController
+    }
+
+
     val actionList by viewModel.actionList.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +99,9 @@ fun BoardScreen(navController: NavController, viewModel: BoardViewModel = hiltVi
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                modifier = Modifier.padding(top = 30.dp).align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .align(Alignment.CenterHorizontally),
                 text = stringResource(R.string.app_title),
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
@@ -153,7 +174,13 @@ fun BoardScreen(navController: NavController, viewModel: BoardViewModel = hiltVi
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                ActionList(actionList)
+                Column() {
+                    ActionList(
+                        actionList,
+                        viewModel,
+                        navController
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
         }

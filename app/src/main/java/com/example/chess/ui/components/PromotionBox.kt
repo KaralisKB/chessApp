@@ -34,7 +34,7 @@ import com.example.chess.local.model.ActionType
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.Position
-import com.example.chess.ui.board.BoardViewModel
+import com.example.chess.ui.board.GameViewModel
 import com.example.chess.ui.theme.Jade
 import com.example.chess.utils.Constants
 
@@ -46,7 +46,7 @@ fun PromotionBox(
     onAction: () -> Unit,
     position: Position,
     clickedSquare: Position,
-    viewModel: BoardViewModel
+    viewModel: GameViewModel
 ) {
     val onChosen: (ChessPiece) -> Unit = { piece ->
 

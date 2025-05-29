@@ -4,17 +4,22 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -32,6 +37,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.chess.R
 import com.example.chess.local.model.Action
 import com.example.chess.local.model.ActionType
@@ -39,21 +46,19 @@ import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.King
 import com.example.chess.local.model.Position
 import com.example.chess.ui.board.GameTimer
+import com.example.chess.ui.board.GameViewModel
+import com.example.chess.ui.navigation.Screen
 import com.example.chess.ui.theme.Jade
 import kotlinx.coroutines.delay
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ActionList(actionList: List<Action?>) {
+fun ActionList(
+    actionList: List<Action?>,
+    viewModel: GameViewModel,
+    navController: NavController
+    ) {
     val listState = rememberLazyListState()
-    var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            currentTime = System.currentTimeMillis()
-            delay(1000)
-        }
-    }
 
     LaunchedEffect(actionList.size) {
         if (actionList.isNotEmpty()) {
@@ -71,28 +76,68 @@ fun ActionList(actionList: List<Action?>) {
                 shape = RoundedCornerShape(4)
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Jade)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Jade)
-                .padding(vertical = 8.dp)
-                .align(Alignment.CenterHorizontally)
+                .height(40.dp)
+                .border(2.dp, Color.White),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                text = GameTimer.getElapsedTime(currentTime)
-            )
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxSize()
+                    .background(Color.Black),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = formatTime(viewModel.blackTimeRemaining!!),
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 18.sp
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(3f)
+                    .fillMaxSize()
+                    .background(Jade),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {
+                        viewModel.forfeit()
+                        navController.navigate(Screen.MainMenu)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Jade),
+                    elevation = null,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Text("Resign", color = Color.White)
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxSize()
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = formatTime(viewModel.whiteTimeRemaining!!),
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    fontSize = 18.sp
+                )
+            }
         }
+        Spacer(modifier = Modifier.height(4.dp).background(Color.White))
         LazyColumn(
             state = listState,
             modifier = Modifier.padding(4.dp)
         ) {
-
             items(actionList) { action ->
                 when (action?.type) {
                     ActionType.MOVE -> MoveActionEntry(action)
@@ -101,13 +146,10 @@ fun ActionList(actionList: List<Action?>) {
                     ActionType.PROMOTION -> PromotionActionEntry(action)
                     null -> null
                 }
-
             }
         }
     }
 }
-
-// todo( CONDENSE
 
 @Composable
 fun MoveActionEntry(action: Action) {
@@ -115,7 +157,7 @@ fun MoveActionEntry(action: Action) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 2.dp, vertical = 4.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
+            .background(Color.White, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.padding(horizontal = 8.dp)) {
@@ -170,7 +212,7 @@ fun AttackActionEntry(action: Action) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 2.dp, vertical = 4.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
+            .background(Color.White, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.padding(horizontal = 8.dp)) {
@@ -240,7 +282,7 @@ fun CastleActionEntry(action: Action) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 2.dp, vertical = 4.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
+            .background(Color.White, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.padding(horizontal = 8.dp)) {
@@ -282,7 +324,7 @@ fun PromotionActionEntry(action: Action) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 2.dp, vertical = 4.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
+            .background(Color.White, shape = RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.padding(horizontal = 8.dp)) {
@@ -366,5 +408,12 @@ fun toLetter(column: Int): String {
         else -> "X"
     }
     return res
+}
+
+fun formatTime(millis: Long): String {
+    val totalSeconds = millis / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format("%02d:%02d", minutes, seconds)
 }
 

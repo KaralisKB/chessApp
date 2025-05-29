@@ -2,14 +2,17 @@ package com.example.chess.domain.repository.impl
 
 import com.example.chess.data.db.dao.ActionDao
 import com.example.chess.data.db.dao.GameDao
+import com.example.chess.data.db.entity.GameEntity
 import com.example.chess.data.mapper.toEntity
 import com.example.chess.data.mapper.toAction
 import com.example.chess.data.mapper.toGame
 import com.example.chess.domain.repository.GameRepo
 import com.example.chess.local.model.Action
 import com.example.chess.local.model.Game
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class GameRepositoryImpl @Inject constructor(
@@ -26,7 +29,10 @@ class GameRepositoryImpl @Inject constructor(
 
 
 
-    override suspend fun createGame(game: Game) = gameDao.insertGame(game.toEntity())
+    override suspend fun createGame(game: GameEntity): Long = withContext(Dispatchers.IO) {
+        gameDao.insertGame(game) }
+
+    override suspend fun endGame(id: Long, winner: String, whiteTimeRemaining: Long, blackTimeRemaining: Long) = gameDao.endGame(id, winner, whiteTimeRemaining, blackTimeRemaining)
 
     override fun getAllGames(): Flow<List<Game>> =
         gameDao.getAllGames().map { entityList -> entityList.map { it.toGame() } }
