@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -39,13 +41,12 @@ fun GameHistoryCard(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .height(120.dp),
+                .fillMaxWidth(0.9f),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF48A6A7)),
             border = BorderStroke(4.dp, Color(0xFF9ACBD0))
         ) {
-            //Header with date,
+            //Top row with date of match
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -58,46 +59,78 @@ fun GameHistoryCard(
                 )
             }
 
-            // Middle row with winners crown
+            // Middle bigger row with three columns, player, game type, player
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 5.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(){
-                    ChessLottie(modifier = Modifier.size(50.dp), R.raw.crown, 1f)
-                }
-                Box(){
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Row() {
+                        ChessLottie(modifier = Modifier.size(50.dp), R.raw.crown, 1f)
+                    }
+
+                    Row() {
+                        Text(
+                            text = "Player 1",
+                            color = Color(0xFFF2EFE7)
+                        )
+                    }
+
+                    Row() {
+                        Text(
+                            text = "01:33",
+                            color = Color(0xFFF2EFE7)
+                        )
+                    }
 
                 }
-                Box(){
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Row() {
+
+                        Text(
+                            text = "Type\n5s",
+                            color = Color(0xFFF2EFE7),
+                            textAlign = TextAlign.Center
+                        )
+
+                    }
 
                 }
-            }
-            //Main row with names, game type, winner and time remaining
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box() {
-                    Text(
-                        text = "Player 1",
-                        color = Color(0xFFF2EFE7)
-                    )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Row() {
+                        Box(modifier = Modifier.size(50.dp)) {}
+                    }
+
+                    Row() {
+                        Text(
+                            text = "Player 2",
+                            color = Color(0xFFF2EFE7)
+                        )
+                    }
+
+                    Row() {
+                        Text(
+                            text = "00:00",
+                            color = Color(0xFFF2EFE7)
+                        )
+                    }
                 }
-                Box() {
-                    Text(
-                        text = "5",
-                        color = Color(0xFFF2EFE7)
-                    )
-                }
-                Box() {
-                    Text(
-                        text = "Player 2",
-                        color = Color(0xFFF2EFE7)
-                    )
-                }
+
             }
         }
     }

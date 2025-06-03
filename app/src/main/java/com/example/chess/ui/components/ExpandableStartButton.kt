@@ -110,7 +110,8 @@ fun ExpandableStartButton(
                             focusedPlaceholderColor = Color(0xFF006A71),
                             unfocusedPlaceholderColor = Color(0xFF006A71),
                             unfocusedBorderColor = Color(0xFF006A71),
-                            focusedBorderColor = Color(0xFF006A71)
+                            focusedBorderColor = Color(0xFF006A71),
+                            focusedTextColor = Color(0xFF006A71)
                         )
                     )
 
@@ -129,7 +130,8 @@ fun ExpandableStartButton(
                             focusedPlaceholderColor = Color(0xFF006A71),
                             unfocusedPlaceholderColor = Color(0xFF006A71),
                             unfocusedBorderColor = Color(0xFF006A71),
-                            focusedBorderColor = Color(0xFF006A71)
+                            focusedBorderColor = Color(0xFF006A71),
+                            focusedTextColor = Color(0xFF006A71)
                         )
                     )
 

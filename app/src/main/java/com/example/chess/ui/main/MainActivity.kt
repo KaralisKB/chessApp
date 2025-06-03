@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 fun HideStatusBar() {
     val systemUiController = rememberSystemUiController()
     SideEffect {
-        systemUiController.isStatusBarVisible = false
+        systemUiController.isSystemBarsVisible = false // Status & Navigation bars
     }
 }
 

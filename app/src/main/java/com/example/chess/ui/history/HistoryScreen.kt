@@ -1,14 +1,16 @@
 package com.example.chess.ui.history
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +22,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.chess.ui.components.GameHistoryCard
 import com.example.chess.ui.navigation.Screen
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun HistoryScreen(
@@ -27,7 +33,9 @@ fun HistoryScreen(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.background(Color(0xFFF2EFE7))
+        modifier = Modifier
+            .background(Color(0xFFF2EFE7))
+            .padding(top = 20.dp)
     ) {
 
         Box(
@@ -45,35 +53,31 @@ fun HistoryScreen(
                 modifier = Modifier.align(Alignment.Center),
                 color = Color(0xFF006A71)
             )
-            Button(onClick = { navController.navigate(Screen.MainMenu) }) {
-                Text("Main Menu")
+            IconButton(
+                onClick = { navController.navigate(Screen.MainMenu) },
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color(0xFF006A71),
+                    modifier = Modifier.size(40.dp)
+                )
             }
         }
 
         LazyColumn(
             modifier = Modifier.background(Color(0xFFF2EFE7))
         ) {
-            item {
-                GameHistoryCard(null, null, null, null, null, null, null)
-            }
-            item {
-                GameHistoryCard(null, null, null, null, null, null, null)
-            }
-            item {
-                GameHistoryCard(null, null, null, null, null, null, null)
-            }
-            item {
-                GameHistoryCard(null, null, null, null, null, null, null)
-            }
-            item {
-                GameHistoryCard(null, null, null, null, null, null, null)
-            }
-            item {
-                GameHistoryCard(null, null, null, null, null, null, null)
-            }
-            item {
+            items(7) {
                 GameHistoryCard(null, null, null, null, null, null, null)
             }
         }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun HistoryScreenPreview() {
+    val navController = rememberNavController()
+    HistoryScreen(navController = navController)
 }
