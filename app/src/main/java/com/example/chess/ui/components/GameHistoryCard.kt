@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.chess.R
 import com.example.chess.local.model.GameType
+import com.example.chess.ui.theme.blurEffect
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
 import java.util.Date
 
 @Composable
@@ -36,14 +40,17 @@ fun GameHistoryCard(
     gameType: GameType?,
     date: Long?
 ) {
+
+
+    val hazeState = remember { HazeState() }
     Box(
         modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.9f),
+                .fillMaxWidth(0.9f)
+                .hazeChild(hazeState, blurEffect(Color(0xFFF2EFE7))),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF48A6A7)),
             border = BorderStroke(4.dp, Color(0xFF9ACBD0))
         ) {
             //Top row with date of match

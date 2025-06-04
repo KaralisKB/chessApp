@@ -24,7 +24,7 @@ roomKtx = "2.6.1"
 navigation-compose = "2.8.9"
 hilt-navigation-compose = "1.2.0"
 kotlinxSerializationJson = "1.7.3"
-
+view-effect-blur = "1.0.0"
 
 [libraries]
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -57,6 +57,7 @@ view-lottie = { group = "com.airbnb.android", name = "lottie-compose", version.r
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
+view-effect-blur = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "view-effect-blur" }
 
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref= "navigation-compose" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navigation-compose" }

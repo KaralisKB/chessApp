@@ -8,7 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,8 +43,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HideStatusBar() {
     val systemUiController = rememberSystemUiController()
-    SideEffect {
-        systemUiController.isSystemBarsVisible = false // Status & Navigation bars
+
+    LaunchedEffect(Unit) {
+        systemUiController.isSystemBarsVisible = false
     }
 }
 
