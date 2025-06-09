@@ -8,6 +8,6 @@ import dev.chrisbanes.haze.HazeStyle
 fun blurEffect(backgroundColor: Color): HazeStyle = HazeStyle(
     backgroundColor = backgroundColor,
     tint = null,
-    blurRadius = 20.dp,
-    noiseFactor = 12f
+    blurRadius = 2.dp,
+    noiseFactor = 0.1f
 )

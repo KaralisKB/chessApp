@@ -1,6 +1,8 @@
 package com.example.chess.ui.components
 
+import android.hardware.lights.Light
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,8 +27,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.chess.R
 import com.example.chess.local.model.GameType
+import com.example.chess.ui.theme.Cream
+import com.example.chess.ui.theme.LightMain
+import com.example.chess.ui.theme.MediumMain
 import com.example.chess.ui.theme.blurEffect
+import com.example.chess.utils.convertLongToDateTime
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import java.util.Date
 
@@ -42,16 +49,16 @@ fun GameHistoryCard(
 ) {
 
 
-    val hazeState = remember { HazeState() }
     Box(
         modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
     ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .hazeChild(hazeState, blurEffect(Color(0xFFF2EFE7))),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            border = BorderStroke(4.dp, Color(0xFF9ACBD0))
+                .clickable {  },
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            border = BorderStroke(4.dp, Cream),
+            colors = CardDefaults.cardColors(containerColor = MediumMain)
         ) {
             //Top row with date of match
             Row(
@@ -59,10 +66,10 @@ fun GameHistoryCard(
                 horizontalArrangement = Arrangement.Center
             ){
                 Text(
-                    text = "12-04-2022",
+                    text = convertLongToDateTime(date!!, "") ?: "00:00:00",
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 5.dp),
-                    color = Color(0xFF9ACBD0)
+                    color = Cream
                 )
             }
 
@@ -85,15 +92,15 @@ fun GameHistoryCard(
 
                     Row() {
                         Text(
-                            text = "Player 1",
-                            color = Color(0xFFF2EFE7)
+                            text = player1name ?: "Player 1",
+                            color = Cream
                         )
                     }
 
                     Row() {
                         Text(
-                            text = "01:33",
-                            color = Color(0xFFF2EFE7)
+                            text = convertLongToDateTime(player1time!!, "short") ?: "00:00:00",
+                            color = Cream
                         )
                     }
 
@@ -106,8 +113,9 @@ fun GameHistoryCard(
                     Row() {
 
                         Text(
-                            text = "Type\n5s",
-                            color = Color(0xFFF2EFE7),
+                            text = "Type\n"+
+                                    gameType.toString(),
+                            color = Cream,
                             textAlign = TextAlign.Center
                         )
 
@@ -125,19 +133,18 @@ fun GameHistoryCard(
 
                     Row() {
                         Text(
-                            text = "Player 2",
-                            color = Color(0xFFF2EFE7)
+                            text = player2name ?: "Player 2",
+                            color = Cream
                         )
                     }
 
                     Row() {
                         Text(
-                            text = "00:00",
-                            color = Color(0xFFF2EFE7)
+                            text = convertLongToDateTime(player2time!!, "short") ?: "00:00:00",
+                            color = Cream
                         )
                     }
                 }
-
             }
         }
     }

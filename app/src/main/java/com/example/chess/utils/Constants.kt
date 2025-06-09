@@ -25,4 +25,5 @@ object Constants {
             Bishop(PieceColor.BLACK, Position(0, 0, FieldState.EMPTY)),
             Knight(PieceColor.BLACK, Position(0, 0, FieldState.EMPTY))
         )
+    //add dp size constants wtc. refer to motorola location project
 }

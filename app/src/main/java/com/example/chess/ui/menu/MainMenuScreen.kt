@@ -31,7 +31,11 @@ import com.example.chess.local.model.GameType
 import com.example.chess.ui.components.ChessLottie
 import com.example.chess.ui.components.ExpandableStartButton
 import com.example.chess.ui.navigation.Screen
+import com.example.chess.ui.theme.Cream
+import com.example.chess.ui.theme.DarkMain
 import com.example.chess.ui.theme.Jade
+import com.example.chess.ui.theme.LightMain
+import com.example.chess.ui.theme.MediumMain
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnrememberedGetBackStackEntry")
@@ -46,7 +50,7 @@ fun MainMenuScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF9ACBD0), Color(0xFFF2EFE7)),
+                    colors = listOf( LightMain, Cream ),
                     startY = 0f,
                     endY = Float.POSITIVE_INFINITY
                 )
@@ -70,7 +74,7 @@ fun MainMenuScreen(
                 color = Color.White,
                 style = TextStyle(
                     shadow = Shadow(
-                        color = Color(0xFF006A71),
+                        color = DarkMain,
                         blurRadius = 10f
                     )
                 )
@@ -88,10 +92,10 @@ fun MainMenuScreen(
             Button(
                 onClick = { navController.navigate(Screen.GameHistory) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF48A6A7),
-                    contentColor = Color(0xFFF2EFE7)
+                    containerColor = MediumMain,
+                    contentColor = Cream
                 ),
-                border = BorderStroke(1.dp, Color(0xFF006A71))
+                border = BorderStroke(1.dp, DarkMain)
                 ) {
                 Text("Game History")
             }

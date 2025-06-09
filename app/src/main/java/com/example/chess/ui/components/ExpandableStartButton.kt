@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
 import com.example.chess.local.model.Game
 import com.example.chess.local.model.GameType
+import com.example.chess.ui.theme.Cream
+import com.example.chess.ui.theme.DarkMain
 import com.example.chess.ui.theme.Jade
 import java.lang.StackWalker.Option
 import kotlin.reflect.KProperty
@@ -67,10 +69,10 @@ fun ExpandableStartButton(
                 bottomEnd = if (expanded) 0.dp else 50.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFF2EFE7),
-                contentColor = Color(0xFF006A71)
+                containerColor = Cream,
+                contentColor = DarkMain
             ),
-            border = BorderStroke(1.dp, Color(0xFF006A71))
+            border = BorderStroke(1.dp, DarkMain)
         ) {
             Text("Start Game")
         }
@@ -85,9 +87,9 @@ fun ExpandableStartButton(
                         stiffness = Spring.StiffnessLow
                     )
                 )
-                .background(Color(0xFFF2EFE7), RoundedCornerShape(
+                .background(Cream, RoundedCornerShape(
                     topStart = 30.dp, topEnd = 30.dp, bottomStart = 30.dp, bottomEnd = 30.dp))
-                .border(1.dp, Color(0xFF006A71), shape = RoundedCornerShape(
+                .border(1.dp, DarkMain, shape = RoundedCornerShape(
                     topStart = 30.dp, topEnd = 30.dp, bottomStart = 30.dp, bottomEnd = 30.dp
                 ))
         ) {
@@ -105,13 +107,13 @@ fun ExpandableStartButton(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
-                            focusedLabelColor = Color(0xFF006A71),
-                            unfocusedLabelColor = Color(0xFF006A71),
-                            focusedPlaceholderColor = Color(0xFF006A71),
-                            unfocusedPlaceholderColor = Color(0xFF006A71),
-                            unfocusedBorderColor = Color(0xFF006A71),
-                            focusedBorderColor = Color(0xFF006A71),
-                            focusedTextColor = Color(0xFF006A71)
+                            focusedLabelColor = DarkMain,
+                            unfocusedLabelColor = DarkMain,
+                            focusedPlaceholderColor = DarkMain,
+                            unfocusedPlaceholderColor = DarkMain,
+                            unfocusedBorderColor = DarkMain,
+                            focusedBorderColor = DarkMain,
+                            focusedTextColor = DarkMain
                         )
                     )
 
@@ -125,62 +127,62 @@ fun ExpandableStartButton(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
-                            focusedLabelColor = Color(0xFF006A71),
-                            unfocusedLabelColor = Color(0xFF006A71),
-                            focusedPlaceholderColor = Color(0xFF006A71),
-                            unfocusedPlaceholderColor = Color(0xFF006A71),
-                            unfocusedBorderColor = Color(0xFF006A71),
-                            focusedBorderColor = Color(0xFF006A71),
-                            focusedTextColor = Color(0xFF006A71)
+                            focusedLabelColor = DarkMain,
+                            unfocusedLabelColor = DarkMain,
+                            focusedPlaceholderColor = DarkMain,
+                            unfocusedPlaceholderColor = DarkMain,
+                            unfocusedBorderColor = DarkMain,
+                            focusedBorderColor = DarkMain,
+                            focusedTextColor = DarkMain
                         )
                     )
 
                     Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                        GameOption(Modifier.weight(1f), "60") {
+                        GameOption(Modifier.weight(1f), "60m") {
                             onAction(GameType.SIXTY, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                         Spacer(modifier = Modifier.size(3.dp))
-                        GameOption(Modifier.weight(1f), "30") {
+                        GameOption(Modifier.weight(1f), "30m") {
                             onAction(GameType.THIRTY, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                         Spacer(modifier = Modifier.size(3.dp))
-                        GameOption(Modifier.weight(1f), "15") {
+                        GameOption(Modifier.weight(1f), "15m") {
                             onAction(GameType.FIFTEEN, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                     }
                     Spacer(modifier = Modifier.size(3.dp))
                     Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                        GameOption(Modifier.weight(1f), "10") {
+                        GameOption(Modifier.weight(1f), "10m") {
                             onAction(GameType.TEN, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                         Spacer(modifier = Modifier.size(3.dp))
-                        GameOption(Modifier.weight(1f), "5 + 3") {
+                        GameOption(Modifier.weight(1f), "5m + 3s") {
                             onAction(GameType.FIVE_THREE, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                         Spacer(modifier = Modifier.size(3.dp))
-                        GameOption(Modifier.weight(1f), "5") {
+                        GameOption(Modifier.weight(1f), "5m") {
                             onAction(GameType.FIVE, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                     }
                     Spacer(modifier = Modifier.size(3.dp))
                     Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                        GameOption(Modifier.weight(1f), "3 + 2") {
+                        GameOption(Modifier.weight(1f), "3m + 2s") {
                             onAction(GameType.THREE_TWO, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                         Spacer(modifier = Modifier.size(3.dp))
-                        GameOption(Modifier.weight(1f), "3") {
+                        GameOption(Modifier.weight(1f), "3m") {
                             onAction(GameType.THREE, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
                         Spacer(modifier = Modifier.size(3.dp))
-                        GameOption(Modifier.weight(1f), "1") {
+                        GameOption(Modifier.weight(1f), "1m") {
                             onAction(GameType.ONE, whiteName.ifBlank { "White" }, blackName.ifBlank { "Black" })
                             expanded = false
                         }
@@ -198,7 +200,7 @@ fun GameOption(modifier: Modifier, label: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(90.dp)
-            .border(1.dp, Color(0xFF006A71))
+            .border(1.dp, DarkMain)
             .border(8.dp, Color.White),
         contentAlignment = Alignment.Center
     ) {
@@ -208,7 +210,7 @@ fun GameOption(modifier: Modifier, label: String, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .clickable { onClick() }
                 .padding(vertical = 12.dp),
-            style = TextStyle(fontSize = 24.sp, color = Color(0xFF006A71), textAlign = TextAlign.Center)
+            style = TextStyle(fontSize = 18.sp, color = DarkMain, textAlign = TextAlign.Center)
         )
     }
 

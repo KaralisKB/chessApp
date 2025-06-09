@@ -11,3 +11,31 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val Jade = Color(0xFF99BCC2)
+
+
+val Cream = Color(0xFFf1f0ea)
+val LightMain = Color(0xFF534b52)
+val MediumMain = Color(0xFF474448)
+val DarkMain = Color(0xFF2d232e)
+
+
+
+
+//brown
+//val Cream = Color(0xFFFFF0D1)
+//val LightMain = Color(0xFF795757)
+//val MediumMain = Color(0xFF664343)
+//val DarkMain = Color(0xFF3B3030)
+
+//blue yellow
+//val Cream = Color(0xFFE1D7B7)
+//val LightMain = Color(0xFF7C93C3)
+//val MediumMain = Color(0xFF55679C)
+//val DarkMain = Color(0xFF1E2A5E)
+
+// main
+//val Cream = Color(0xFFF2EFE7)
+//val LightMain = Color(0xFF9ACBD0)
+//val LightMainHalfOpacity = Color(0x809ACBD0)
+//val MediumMain = Color(0xFF48A6A7)
+//val DarkMain = Color(0xFF006A71)
