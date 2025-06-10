@@ -30,8 +30,10 @@ abstract class BaseViewModel(
         }
     }
 
-    fun <T> ioToUnit(io: suspend () -> T, ui: suspend () -> Unit) {
-        ioToUnit(io, ui)
+    fun ioToLong(io: suspend () -> Long) {
+        viewModelScope.launch {
+            withContext(ioDispatcher) { io() }
+        }
     }
 
     fun <T> Flow<T>.toStateFlow(

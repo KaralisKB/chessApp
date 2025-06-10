@@ -14,8 +14,7 @@ class MenuViewModel @Inject constructor(
     private val createGameUseCase: CreateGameUseCase
 ) : BaseViewModel(Dispatchers.Default) {
 
-    fun createGame(player1: String, player2: String, gameType: GameType): Long {
-        var id: Long = 0
+    suspend fun createGame(player1: String, player2: String, gameType: GameType): Long {
         val game = GameEntity(
             gameId = 0L,
             whiteName = player1,
@@ -26,10 +25,6 @@ class MenuViewModel @Inject constructor(
             blackTimeRemaining = null,
             date = System.currentTimeMillis()
         )
-
-        ioToUi(
-            io = { createGameUseCase.execute(game) },
-            ui = { id = it })
-        return id
+        return createGameUseCase.execute(game)
     }
 }

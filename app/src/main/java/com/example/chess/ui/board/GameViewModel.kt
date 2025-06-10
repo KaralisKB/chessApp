@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.example.chess.data.db.entity.GameEntity
 import com.example.chess.domain.useCase.board.MovePieceUseCase
 import com.example.chess.domain.useCase.game.CreateGameUseCase
 import com.example.chess.domain.useCase.game.EndGameUseCase
@@ -56,6 +55,8 @@ class GameViewModel @Inject constructor(
     var whiteTimeRemaining by mutableStateOf<Long?>(0L)
     var blackTimeRemaining by mutableStateOf<Long?>(0L)
 
+    private var clockOn by mutableStateOf(false)
+
     var selectedPiece by mutableStateOf<ChessPiece?>(null)
     private var isWhiteTurn by mutableStateOf(true)
     var possibleMoves by mutableStateOf<List<Position>>(listOf())
@@ -66,10 +67,12 @@ class GameViewModel @Inject constructor(
     private var whiteInCheck by mutableStateOf(false)
     private var blackInCheck by mutableStateOf(false)
     private val whiteKing: ChessPiece?
-        get() = board.board.flatten().firstOrNull { it?.type == PieceType.KING && it.color == PieceColor.WHITE }
+        get() = board.board.flatten()
+            .firstOrNull { it?.type == PieceType.KING && it.color == PieceColor.WHITE }
 
     private val blackKing: ChessPiece?
-        get() = board.board.flatten().firstOrNull { it?.type == PieceType.KING && it.color == PieceColor.BLACK }
+        get() = board.board.flatten()
+            .firstOrNull { it?.type == PieceType.KING && it.color == PieceColor.BLACK }
     private var boardArray = board.board
 
     val onPromotionGranted: () -> Unit = {
@@ -94,20 +97,41 @@ class GameViewModel @Inject constructor(
         this.gameId = gameId
 
         val initialTime = when (gameType) {
-            GameType.SIXTY -> 60 * 60_000L
-            GameType.THIRTY -> 30 * 60_000L
-            GameType.FIFTEEN -> 15 * 60_000L
-            GameType.TEN -> 10 * 60_000L
-            GameType.FIVE_THREE -> 5 * 60_000L
+            GameType.SIXTY -> 60 * 60000L
+            GameType.THIRTY -> 30 * 60000L
+            GameType.FIFTEEN -> 15 * 60000L
+            GameType.TEN -> 10 * 60000L
+            GameType.FIVE_THREE -> 5 * 60000L
             GameType.FIVE -> 5 * 60_000L
-            GameType.THREE_TWO -> 3 * 60_000L
-            GameType.THREE -> 3 * 60_000L
-            GameType.ONE -> 60_000L
+            GameType.THREE_TWO -> 3 * 60000L
+            GameType.THREE -> 3 * 60000L
+            GameType.ONE -> 60000L
         }
 
         whiteTimeRemaining = initialTime
         blackTimeRemaining = initialTime
+        clockOn = true
         startClock()
+    }
+
+    private fun endGame(winner: String) {
+        try {
+            clockOn = false
+            Log.d(
+                "GameViewModel",
+                "Game ended: White time passed: $whiteTimeRemaining, Black time passed: $blackTimeRemaining"
+            )
+            ioToUnit {
+                endGameUseCase.execute(
+                    gameId!!,
+                    winner,
+                    whiteTimeRemaining!!,
+                    blackTimeRemaining!!
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("GameViewModel", "Error in endgame: ${e.message}")
+        }
     }
 
     private fun selectPiece(selectedPiece: ChessPiece?) {
@@ -137,19 +161,25 @@ class GameViewModel @Inject constructor(
         whiteInCheck = whiteResult.first
         blackInCheck = blackResult.second
 
-        if(whiteInCheck || blackInCheck) { getLineOfAttack() }
+        if (whiteInCheck || blackInCheck) {
+            getLineOfAttack()
+        }
 
         viewModelScope.launch {
             if (whiteInCheck && board.isCheckmate(currentWhiteKing, board, lineOfAttack)) {
 
                 winner = if (isWhiteTurn) blackName else whiteName
-                viewModelScope.launch { endGameUseCase.execute(gameId!!, winner!!, whiteTimeRemaining!!, blackTimeRemaining!!) }
+                viewModelScope.launch {
+                    endGame(winner!!)
+                }
                 navController?.navigate(Screen.MainMenu)
 
             } else if (blackInCheck && board.isCheckmate(currentBlackKing, board, lineOfAttack)) {
 
                 winner = if (isWhiteTurn) blackName else whiteName
-                viewModelScope.launch { endGameUseCase.execute(gameId!!, winner!!, whiteTimeRemaining!!, blackTimeRemaining!!) }
+                viewModelScope.launch {
+                    endGame(winner!!)
+                }
                 navController?.navigate(Screen.MainMenu)
 
             }
@@ -158,12 +188,29 @@ class GameViewModel @Inject constructor(
 
     private fun getLineOfAttack() {
         when (lastMovedPiece?.type) {
-            PieceType.PAWN -> {lineOfAttack = listOf(lastMovedPiece!!.position)}
-            PieceType.KNIGHT -> {lineOfAttack = listOf(lastMovedPiece!!.position)}
-            PieceType.BISHOP -> {lineOfAttack = getBishopLOA(lastMovedPiece)}
-            PieceType.ROOK -> {lineOfAttack = getRookLOA(lastMovedPiece!!)}
-            PieceType.QUEEN -> {lineOfAttack = getQueenLOA()}
-            else -> {lineOfAttack = listOf()}
+            PieceType.PAWN -> {
+                lineOfAttack = listOf(lastMovedPiece!!.position)
+            }
+
+            PieceType.KNIGHT -> {
+                lineOfAttack = listOf(lastMovedPiece!!.position)
+            }
+
+            PieceType.BISHOP -> {
+                lineOfAttack = getBishopLOA(lastMovedPiece)
+            }
+
+            PieceType.ROOK -> {
+                lineOfAttack = getRookLOA(lastMovedPiece!!)
+            }
+
+            PieceType.QUEEN -> {
+                lineOfAttack = getQueenLOA()
+            }
+
+            else -> {
+                lineOfAttack = listOf()
+            }
         }
     }
 
@@ -174,33 +221,57 @@ class GameViewModel @Inject constructor(
     private fun getBishopLOA(piece: ChessPiece?): List<Position> {
         val lineOfAttack: MutableList<Position> = mutableListOf()
         val piecePosition = piece!!.position
-        val kingPosition = if(whiteInCheck) whiteKing!!.position else blackKing!!.position
+        val kingPosition = if (whiteInCheck) whiteKing!!.position else blackKing!!.position
 
         when {
             piecePosition.row < kingPosition.row && piecePosition.col < kingPosition.col -> {
                 for (i in 1 until (kingPosition.row - piecePosition.row)) {
-                    lineOfAttack.add(Position(piecePosition.row + i, piecePosition.col + i, FieldState.VALID))
+                    lineOfAttack.add(
+                        Position(
+                            piecePosition.row + i,
+                            piecePosition.col + i,
+                            FieldState.VALID
+                        )
+                    )
                 }
                 lineOfAttack.add(piecePosition)
             }
 
             piecePosition.row < kingPosition.row && piecePosition.col > kingPosition.col -> {
                 for (i in 1 until (kingPosition.row - piecePosition.row)) {
-                    lineOfAttack.add(Position(piecePosition.row + i, piecePosition.col - i, FieldState.VALID))
+                    lineOfAttack.add(
+                        Position(
+                            piecePosition.row + i,
+                            piecePosition.col - i,
+                            FieldState.VALID
+                        )
+                    )
                 }
                 lineOfAttack.add(piecePosition)
             }
 
             piecePosition.row > kingPosition.row && piecePosition.col < kingPosition.col -> {
                 for (i in 1 until (piecePosition.row - kingPosition.row)) {
-                    lineOfAttack.add(Position(piecePosition.row - i, piecePosition.col + i, FieldState.VALID))
+                    lineOfAttack.add(
+                        Position(
+                            piecePosition.row - i,
+                            piecePosition.col + i,
+                            FieldState.VALID
+                        )
+                    )
                 }
                 lineOfAttack.add(piecePosition)
             }
 
             piecePosition.row > kingPosition.row && piecePosition.col > kingPosition.col -> {
                 for (i in 1 until (piecePosition.row - kingPosition.row)) {
-                    lineOfAttack.add(Position(piecePosition.row - i, piecePosition.col - i, FieldState.VALID))
+                    lineOfAttack.add(
+                        Position(
+                            piecePosition.row - i,
+                            piecePosition.col - i,
+                            FieldState.VALID
+                        )
+                    )
                 }
                 lineOfAttack.add(piecePosition)
             }
@@ -211,12 +282,12 @@ class GameViewModel @Inject constructor(
     private fun getRookLOA(piece: ChessPiece): List<Position> {
         val lineOfAttack: MutableList<Position> = mutableListOf()
         val piecePosition = piece.position
-        val kingPosition = if(whiteInCheck) whiteKing!!.position else blackKing!!.position
+        val kingPosition = if (whiteInCheck) whiteKing!!.position else blackKing!!.position
 
         when {
             piecePosition.row == kingPosition.row -> {
                 //rook on left of king
-                if(piecePosition.col < kingPosition.col) {
+                if (piecePosition.col < kingPosition.col) {
                     for (i in piecePosition.col + 1 until kingPosition.col) {
                         lineOfAttack.add(Position(piecePosition.row, i, FieldState.VALID))
                     }
@@ -233,7 +304,7 @@ class GameViewModel @Inject constructor(
 
             piecePosition.col == kingPosition.col -> {
                 //rook on top of king
-                if(piecePosition.row < kingPosition.row) {
+                if (piecePosition.row < kingPosition.row) {
                     for (i in piecePosition.row + 1 until kingPosition.row) {
                         lineOfAttack.add(Position(i, piecePosition.col, FieldState.VALID))
                     }
@@ -267,18 +338,24 @@ class GameViewModel @Inject constructor(
 
         clickedSquare = Position(row, col, FieldState.EMPTY)
         val clickedPiece = this.boardArray[row][col]
-        if (clickedPiece == selectedPiece) {selectedPiece = clickedPiece; return }
+        if (clickedPiece == selectedPiece) {
+            selectedPiece = clickedPiece; return
+        }
 
-        if(!_isPromotionPossible(selectedPiece, clickedSquare)) {
+        if (!_isPromotionPossible(selectedPiece, clickedSquare)) {
             when {
 
                 selectedPiece != null && clickedPiece == null && possibleMoves.contains(
                     Position(row, col, FieldState.VALID)
-                ) -> { executeMove(row, col) }
+                ) -> {
+                    executeMove(row, col)
+                }
 
                 (selectedPiece != null && clickedPiece != null && possibleMoves.contains(
                     Position(row, col, FieldState.ATTACK)
-                )) -> { executeAttack(row, col, clickedPiece) }
+                )) -> {
+                    executeAttack(row, col, clickedPiece)
+                }
 
                 else -> {
                     selectPiece(clickedPiece)
@@ -286,7 +363,11 @@ class GameViewModel @Inject constructor(
                         if (clickedPiece?.color == selectedPiece?.color) clickedPiece else selectedPiece
 
                     val params = MovePieceUseCase.Params.create(
-                        piece = updatedSelectedPiece, board = board, whiteInCheck, blackInCheck, lineOfAttack
+                        piece = updatedSelectedPiece,
+                        board = board,
+                        whiteInCheck,
+                        blackInCheck,
+                        lineOfAttack
                     )
                     ioToUi(io = { movePieceUseCase.execute(params) }, ui = {
                         possibleMoves = checkMoveParser(
@@ -391,12 +472,14 @@ class GameViewModel @Inject constructor(
                             (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col)
                 }
             }
+
             blackInCheck && !isKing -> {
                 allPossibleMoves.filter {
                     board.blockCheck(it, lineOfAttack) ||
                             (attackerPosition != null && it.row == attackerPosition.row && it.col == attackerPosition.col)
                 }
             }
+
             else -> allPossibleMoves
         }
 
@@ -415,42 +498,42 @@ class GameViewModel @Inject constructor(
 
     fun forfeit() {
         winner = if (isWhiteTurn) blackName else whiteName
-        viewModelScope.launch {
-            endGameUseCase.execute(gameId!!, winner!!, whiteTimeRemaining!!, blackTimeRemaining!!)
-        }
+        endGame(winner!!)
     }
 
     private fun startClock() {
-        viewModelScope.launch {
-            while (true) {
+        ioToUnit {
+            while (clockOn) {
+
+                //TODO: Try to find timer library to replace delay
+
                 delay(1000L)
                 if (isWhiteTurn) {
+
                     whiteTimeRemaining = (whiteTimeRemaining!! - 1000L)
-                    println("${whiteTimeRemaining}")
-                    if (whiteTimeRemaining!! < 1000L ) {
+
+                    if (whiteTimeRemaining!! < 1000L) {
                         try {
-                            endGameUseCase.execute(gameId!!, blackName!!, whiteTimeRemaining!!, blackTimeRemaining!!)
+                            endGame(blackName!!)
                         } catch (e: Exception) {
-                            Log.e("GameViewModel", "Error in forfeit: ${e.message}")
+                            Log.e("GameViewModel", "Error in endgame: ${e.message}")
                         }
                     }
-                } else {
-                    blackTimeRemaining = (blackTimeRemaining!! - 1000L)
-                    if (blackTimeRemaining!! < 1000L ) {
-                        endGameUseCase.execute(gameId!!, whiteName!!, whiteTimeRemaining!!, blackTimeRemaining!!)
 
+                } else {
+
+                    blackTimeRemaining = (blackTimeRemaining!! - 1000L)
+                    if (blackTimeRemaining!! < 1000L) {
+                        try {
+                            endGame(whiteName!!)
+                        } catch (e: Exception) {
+                            Log.e("GameViewModel", "Error in endgame: ${e.message}")
+                        }
                     }
                 }
             }
         }
     }
 
-
-    fun logAction(action: Action) {
-        viewModelScope.launch {
-            saveActionUseCase(action)
-        }
-    }
-
-
+    fun logAction(action: Action) = ioToUnit { saveActionUseCase(action) }
 }

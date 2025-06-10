@@ -50,7 +50,7 @@ fun MainMenuScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf( LightMain, Cream ),
+                    colors = listOf( Cream, LightMain ),
                     startY = 0f,
                     endY = Float.POSITIVE_INFINITY
                 )

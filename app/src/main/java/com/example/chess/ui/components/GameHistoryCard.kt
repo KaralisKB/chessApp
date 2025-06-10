@@ -2,6 +2,8 @@ package com.example.chess.ui.components
 
 import android.hardware.lights.Light
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -19,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +32,8 @@ import androidx.compose.ui.zIndex
 import com.example.chess.R
 import com.example.chess.local.model.GameType
 import com.example.chess.ui.theme.Cream
+import com.example.chess.ui.theme.DarkMain
+import com.example.chess.ui.theme.DarkMedium
 import com.example.chess.ui.theme.LightMain
 import com.example.chess.ui.theme.MediumMain
 import com.example.chess.ui.theme.blurEffect
@@ -55,18 +61,18 @@ fun GameHistoryCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .clickable {  },
+                .clickable { },
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            border = BorderStroke(4.dp, Cream),
+            border = BorderStroke(2.dp, Cream),
             colors = CardDefaults.cardColors(containerColor = MediumMain)
         ) {
             //Top row with date of match
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
-            ){
+            ) {
                 Text(
-                    text = convertLongToDateTime(date!!, "") ?: "00:00:00",
+                    text = convertLongToDateTime(date!!, false) ?: "00:00:00",
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 5.dp),
                     color = Cream
@@ -77,17 +83,24 @@ fun GameHistoryCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 5.dp),
+                    .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
+                    .background(DarkMedium, shape = RoundedCornerShape(6.dp))
+                    .border(1.dp, Cream, shape = RoundedCornerShape(6.dp)),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+
                 ) {
 
                     Row() {
-                        ChessLottie(modifier = Modifier.size(50.dp), R.raw.crown, 1f)
+                        if (winner == player1name) {
+                            ChessLottie(modifier = Modifier.size(50.dp), R.raw.crown, 1f)
+                        } else {
+                            Box(modifier = Modifier.size(50.dp)) {}
+                        }
                     }
 
                     Row() {
@@ -99,7 +112,7 @@ fun GameHistoryCard(
 
                     Row() {
                         Text(
-                            text = convertLongToDateTime(player1time!!, "short") ?: "00:00:00",
+                            text = convertLongToDateTime(player1time!!, true) ?: "00:00:00",
                             color = Cream
                         )
                     }
@@ -113,7 +126,7 @@ fun GameHistoryCard(
                     Row() {
 
                         Text(
-                            text = "Type\n"+
+                            text = "Type\n" +
                                     gameType.toString(),
                             color = Cream,
                             textAlign = TextAlign.Center
@@ -128,7 +141,11 @@ fun GameHistoryCard(
                 ) {
 
                     Row() {
-                        Box(modifier = Modifier.size(50.dp)) {}
+                        if (winner == player2name) {
+                            ChessLottie(modifier = Modifier.size(50.dp), R.raw.crown, 1f)
+                        } else {
+                            Box(modifier = Modifier.size(50.dp)) {}
+                        }
                     }
 
                     Row() {
@@ -140,7 +157,7 @@ fun GameHistoryCard(
 
                     Row() {
                         Text(
-                            text = convertLongToDateTime(player2time!!, "short") ?: "00:00:00",
+                            text = convertLongToDateTime(player2time!!, true) ?: "00:00:00",
                             color = Cream
                         )
                     }

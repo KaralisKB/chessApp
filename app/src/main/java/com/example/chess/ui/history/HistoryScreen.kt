@@ -133,7 +133,7 @@ fun HistoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Cream)
+                .background(LightMain)
                 .haze(hazeState),
             horizontalAlignment = Alignment.CenterHorizontally,
             state = listState

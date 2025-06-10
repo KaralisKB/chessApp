@@ -6,5 +6,9 @@ import javax.inject.Inject
 class EndGameUseCase @Inject constructor(
     private val repo: GameRepo
 ) {
-    suspend fun execute(id: Long, winner: String, whiteTimeRemaining: Long, blackTimeRemaining: Long) = repo.endGame(id, winner, whiteTimeRemaining, blackTimeRemaining)
+    suspend fun execute(id: Long, winner: String, whiteTimeRemaining: Long, blackTimeRemaining: Long)
+    {
+        val res = repo.endGame(id, winner, whiteTimeRemaining, blackTimeRemaining)
+        res
+    }
 }

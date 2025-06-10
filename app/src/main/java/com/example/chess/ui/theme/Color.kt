@@ -13,10 +13,11 @@ val Pink40 = Color(0xFF7D5260)
 val Jade = Color(0xFF99BCC2)
 
 
-val Cream = Color(0xFFf1f0ea)
-val LightMain = Color(0xFF534b52)
-val MediumMain = Color(0xFF474448)
-val DarkMain = Color(0xFF2d232e)
+val Cream = Color(0xFFe0e1dd)
+val LightMain = Color(0xFF778da9)
+val MediumMain = Color(0xFF32475E)
+val DarkMedium = Color(0xFF32475E)
+val DarkMain = Color(0xFF0d1b2a)
 
 
 

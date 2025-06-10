@@ -1,19 +1,24 @@
 package com.example.chess.utils
 
-import java.time.Instant
-import java.time.ZoneId
+import android.annotation.SuppressLint
+import com.example.chess.ui.board.GameTimer.startTimeMillis
+import java.text.SimpleDateFormat
+import java.time.LocalDate
 
- fun convertLongToDateTime(timeMillis: Long?, format: String?): String? {
+import java.util.Date
 
-    val instant = timeMillis?.let { Instant.ofEpochMilli(it) }
+@SuppressLint("DefaultLocale", "SimpleDateFormat")
+ fun convertLongToDateTime(timeMillis: Long?, short: Boolean): String? {
+    val seconds = (timeMillis!! % 60000) / 1000
+    val minutes = (timeMillis / 60000)
 
-    val localDateTime = instant?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
 
-    val formatter = if (format == "short") {
-        java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")
-    } else {
-        java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")
-    }
+     if(short) {
+         return String.format("%02d:%02d", minutes, seconds)
+     } else {
+         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+         val dateString = simpleDateFormat.format(timeMillis)
+         return String.format("%s", dateString)
+     }
 
-    return localDateTime?.format(formatter)
 }
