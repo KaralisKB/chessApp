@@ -1,6 +1,5 @@
 package com.example.chess.ui.board
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -22,14 +21,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
@@ -53,7 +50,6 @@ import androidx.navigation.NavController
 import com.example.chess.R
 import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
-import com.example.chess.local.model.Game
 import com.example.chess.local.model.GameType
 import com.example.chess.local.model.Pawn
 import com.example.chess.local.model.Position
@@ -64,10 +60,9 @@ import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.Piece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PromotionBox
-import com.example.chess.ui.navigation.Screen
-import com.example.chess.ui.theme.Jade
+import com.example.chess.ui.theme.Cream
+import com.example.chess.ui.theme.LightMain
 import com.example.chess.utils.ext.getStateColor
-
 
 
 @Composable
@@ -90,7 +85,13 @@ fun BoardScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.LightGray)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf( LightMain, Cream ),
+                    startY = 0f,
+                    endY = Float.POSITIVE_INFINITY
+                )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -250,7 +251,7 @@ fun GridItem(
     Box(
         modifier = Modifier
             .size(40.dp)
-            .background(if ((row + column) % 2 == 0) Jade else Color.White)
+            .background(if ((row + column) % 2 == 0) LightMain else Color.White)
             .clickable { onSquareClick() }
             .graphicsLayer {
                 scaleX = scale.value

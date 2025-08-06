@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -15,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -33,7 +33,6 @@ import com.example.chess.ui.components.ExpandableStartButton
 import com.example.chess.ui.navigation.Screen
 import com.example.chess.ui.theme.Cream
 import com.example.chess.ui.theme.DarkMain
-import com.example.chess.ui.theme.Jade
 import com.example.chess.ui.theme.LightMain
 import com.example.chess.ui.theme.MediumMain
 import kotlinx.coroutines.launch
@@ -58,7 +57,9 @@ fun MainMenuScreen(
         contentAlignment = Alignment.TopCenter
     ) {
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             ChessLottie(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)

@@ -35,7 +35,7 @@ import com.example.chess.local.model.BoardState
 import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.Position
 import com.example.chess.ui.board.GameViewModel
-import com.example.chess.ui.theme.Jade
+import com.example.chess.ui.theme.LightMain
 import com.example.chess.utils.Constants
 
 @Composable
@@ -56,7 +56,7 @@ fun PromotionBox(
                 gameId = 1, // TODO Make this gameId auto become the current games id from db
                 selectedPiece,
                 ActionType.PROMOTION,
-                time = System.currentTimeMillis(),
+                time = viewModel.initialTime?.minus((if(selectedPiece!!.color == PieceColor.WHITE) viewModel.whiteTimeRemaining else viewModel.blackTimeRemaining)!!) ?: 0,
                 originalPosition = selectedPiece.position,
                 newPosition = Position(clickedSquare.row, clickedSquare.col, FieldState.VALID),
                 killedPiece = null,
@@ -84,11 +84,11 @@ fun PromotionBox(
             .border(2.dp, Color.Black, shape = RoundedCornerShape(5.dp))
             .wrapContentHeight()
             .fillMaxWidth(0.8f)
-            .background(Jade)
+            .background(LightMain)
     ) {
         Column(
             modifier = Modifier
-                .background(Jade)
+                .background(LightMain)
                 .padding(vertical = 25.dp)
                 .wrapContentHeight(),
             verticalArrangement = Arrangement.Center,
@@ -96,7 +96,7 @@ fun PromotionBox(
         ) {
             LazyRow(
                 modifier = Modifier
-                    .background(Jade)
+                    .background(LightMain)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center

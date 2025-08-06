@@ -13,7 +13,7 @@ interface ActionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAction(action: ActionEntity)
 
-    @Query("Select * FROM actions ORDER BY time ASC")
+    @Query("Select * FROM actions ORDER BY turnId ASC")
     fun getAllActions(): Flow<List<ActionEntity>>
 
     @Query("DELETE FROM actions")

@@ -4,14 +4,12 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,17 +23,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -45,11 +38,9 @@ import com.example.chess.local.model.ActionType
 import com.example.chess.local.model.FieldState
 import com.example.chess.local.model.King
 import com.example.chess.local.model.Position
-import com.example.chess.ui.board.GameTimer
 import com.example.chess.ui.board.GameViewModel
 import com.example.chess.ui.navigation.Screen
-import com.example.chess.ui.theme.Jade
-import kotlinx.coroutines.delay
+import com.example.chess.ui.theme.LightMain
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -76,7 +67,7 @@ fun ActionList(
                 shape = RoundedCornerShape(4)
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Jade)
+        colors = CardDefaults.cardColors(containerColor = LightMain)
     ) {
         Row(
             modifier = Modifier
@@ -103,7 +94,7 @@ fun ActionList(
                 modifier = Modifier
                     .weight(3f)
                     .fillMaxSize()
-                    .background(Jade),
+                    .background(LightMain),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
@@ -111,7 +102,7 @@ fun ActionList(
                         viewModel.forfeit()
                         navController.navigate(Screen.MainMenu)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Jade),
+                    colors = ButtonDefaults.buttonColors(containerColor = LightMain),
                     elevation = null,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
@@ -201,7 +192,7 @@ fun MoveActionEntry(action: Action) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(horizontal = 8.dp),
-            text = GameTimer.getElapsedTime(action.time)
+            text = formatTime(action.time)
         )
     }
 }
@@ -270,7 +261,7 @@ fun AttackActionEntry(action: Action) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(horizontal = 8.dp),
-            text = GameTimer.getElapsedTime(action.time)
+            text = formatTime(action.time)
         )
     }
 }
@@ -313,7 +304,7 @@ fun CastleActionEntry(action: Action) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(horizontal = 8.dp),
-            text = GameTimer.getElapsedTime(action.time)
+            text = formatTime(action.time)
         )
     }
 }
@@ -365,7 +356,7 @@ fun PromotionActionEntry(action: Action) {
         Spacer(modifier = Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(horizontal = 8.dp),
-            text = GameTimer.getElapsedTime(action.time)
+            text = formatTime(action.time)
         )
     }
 }
@@ -414,6 +405,13 @@ fun formatTime(millis: Long): String {
     val totalSeconds = millis / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
+    return String.format("%02d:%02d", minutes, seconds)
+}
+
+fun getElapsedTime(eventTimeMillis: Long, startOfGameTime: Long): String {
+    val elapsed = eventTimeMillis - startOfGameTime
+    val seconds = (elapsed / 1000) % 60
+    val minutes = (elapsed / 1000) / 60
     return String.format("%02d:%02d", minutes, seconds)
 }
 

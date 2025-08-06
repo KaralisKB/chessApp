@@ -49,6 +49,8 @@ class GameViewModel @Inject constructor(
     var gameType by mutableStateOf<GameType?>(null)
     var gameId by mutableStateOf<Long?>(null)
 
+    var initialTime by mutableStateOf<Long?>(null)
+
     var navController by mutableStateOf<NavController?>(null)
 
     private var winner by mutableStateOf<String?>(null)
@@ -96,7 +98,7 @@ class GameViewModel @Inject constructor(
         this.gameType = gameType
         this.gameId = gameId
 
-        val initialTime = when (gameType) {
+        initialTime = when (gameType) {
             GameType.SIXTY -> 60 * 60000L
             GameType.THIRTY -> 30 * 60000L
             GameType.FIFTEEN -> 15 * 60000L
@@ -403,7 +405,7 @@ class GameViewModel @Inject constructor(
                     gameId = 1, // TODO Make this gameId auto become the current games id from db
                     selectedPiece!!,
                     ActionType.CASTLE,
-                    time = System.currentTimeMillis(),
+                    time = initialTime?.minus((if(selectedPiece!!.color == PieceColor.WHITE) whiteTimeRemaining else blackTimeRemaining)!!) ?: 0,
                     originalPosition = selectedPiece!!.position,
                     Position(row + 1, col, FieldState.VALID),
                     null,
@@ -419,7 +421,7 @@ class GameViewModel @Inject constructor(
                     gameId = 1, // TODO Make this gameId auto become the current games id from db
                     selectedPiece!!,
                     ActionType.MOVE,
-                    time = System.currentTimeMillis(),
+                    time = initialTime?.minus((if(selectedPiece!!.color == PieceColor.WHITE) whiteTimeRemaining else blackTimeRemaining)!!) ?: 0,
                     originalPosition = oldPosition!!,
                     Position(row + 1, col, FieldState.VALID),
                     null,
@@ -445,7 +447,7 @@ class GameViewModel @Inject constructor(
                 gameId = 1, // TODO Make this gameId auto become the current games id from db
                 selectedPiece!!,
                 ActionType.ATTACK,
-                time = System.currentTimeMillis(),
+                time = initialTime?.minus((if(selectedPiece!!.color == PieceColor.WHITE) whiteTimeRemaining else blackTimeRemaining)!!) ?: 0,
                 originalPosition = oldPosition!!,
                 Position(row, col, FieldState.ATTACK),
                 killedPiece = clickedPiece,

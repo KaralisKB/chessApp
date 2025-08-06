@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:resizeMode="horizontal|vertical"
+    android:minWidth="128dp"
+    android:minHeight="128dp"
+    android:description="@string/widget_names_hello_world"
+    android:updatePeriodMillis="360000"
+    android:minResizeHeight="128dp"
+    android:minResizeWidth="128dp"
+    android:maxResizeWidth="512dp"
+    android:maxResizeHeight="512dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:initialLayout="@layout/glance_default_loading_layout">
+</appwidget-provider>

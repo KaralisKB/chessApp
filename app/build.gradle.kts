@@ -66,6 +66,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
 
+    //glance widget
+    implementation(libs.androidx.glance.appwidget)
+
 
     // Hilt (Updated to latest version)
     implementation(libs.hilt.android)
