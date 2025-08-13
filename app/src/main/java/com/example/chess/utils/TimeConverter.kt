@@ -1,11 +1,7 @@
 package com.example.chess.utils
 
 import android.annotation.SuppressLint
-import com.example.chess.ui.board.GameTimer.startTimeMillis
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-
-import java.util.Date
 
 @SuppressLint("DefaultLocale", "SimpleDateFormat")
  fun convertLongToDateTime(timeMillis: Long?, short: Boolean): String? {

@@ -9,6 +9,6 @@ class EndGameUseCase @Inject constructor(
     suspend fun execute(id: Long, winner: String, whiteTimeRemaining: Long, blackTimeRemaining: Long)
     {
         val res = repo.endGame(id, winner, whiteTimeRemaining, blackTimeRemaining)
-        res
+        return res
     }
 }

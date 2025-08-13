@@ -1,12 +1,10 @@
 package com.example.chess.data.db.dao
 
-import androidx.compose.ui.graphics.colorspace.WhitePoint
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import com.example.chess.data.db.entity.GameEntity
 import kotlinx.coroutines.flow.Flow
 

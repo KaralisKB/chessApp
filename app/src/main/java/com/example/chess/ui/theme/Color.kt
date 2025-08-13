@@ -15,25 +15,3 @@ val LightMain = Color(0xFF778da9)
 val MediumMain = Color(0xFF32475E)
 val DarkMedium = Color(0xFF32475E)
 val DarkMain = Color(0xFF0d1b2a)
-
-
-
-
-//brown
-//val Cream = Color(0xFFFFF0D1)
-//val LightMain = Color(0xFF795757)
-//val MediumMain = Color(0xFF664343)
-//val DarkMain = Color(0xFF3B3030)
-
-//blue yellow
-//val Cream = Color(0xFFE1D7B7)
-//val LightMain = Color(0xFF7C93C3)
-//val MediumMain = Color(0xFF55679C)
-//val DarkMain = Color(0xFF1E2A5E)
-
-// main
-//val Cream = Color(0xFFF2EFE7)
-//val LightMain = Color(0xFF9ACBD0)
-//val LightMainHalfOpacity = Color(0x809ACBD0)
-//val MediumMain = Color(0xFF48A6A7)
-//val DarkMain = Color(0xFF006A71)

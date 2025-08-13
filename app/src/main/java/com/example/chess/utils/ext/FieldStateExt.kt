@@ -1,9 +1,5 @@
 package com.example.chess.utils.ext
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Green
-import androidx.compose.ui.graphics.Color.Companion.Red
-import androidx.compose.ui.graphics.Color.Companion.Yellow
 import com.example.chess.R
 import com.example.chess.local.model.FieldState
 

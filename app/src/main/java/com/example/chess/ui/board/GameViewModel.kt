@@ -321,7 +321,7 @@ class GameViewModel @Inject constructor(
                 }
             }
         }
-        return lineOfAttack.filter { it.row in 0..7 && it.col in 0..7 } ?: listOf()
+        return lineOfAttack.filter { it.row in 0..7 && it.col in 0..7 }
     }
 
     private fun _isPromotionPossible(piece: ChessPiece?, clickedSquare: Position?): Boolean {

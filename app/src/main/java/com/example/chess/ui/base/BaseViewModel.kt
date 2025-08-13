@@ -30,12 +30,6 @@ abstract class BaseViewModel(
         }
     }
 
-    fun ioToLong(io: suspend () -> Long) {
-        viewModelScope.launch {
-            withContext(ioDispatcher) { io() }
-        }
-    }
-
     fun <T> Flow<T>.toStateFlow(
         sharingIn: SharingStarted = SharingStarted.Eagerly,
         initial: T

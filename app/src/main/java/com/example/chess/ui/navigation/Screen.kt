@@ -1,7 +1,6 @@
 package com.example.chess.ui.navigation
 
 import com.example.chess.local.model.GameType
-import com.example.chess.ui.components.ChessPiece
 import kotlinx.serialization.Serializable
 
 @Serializable

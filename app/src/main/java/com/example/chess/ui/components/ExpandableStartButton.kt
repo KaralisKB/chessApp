@@ -43,7 +43,6 @@ fun ExpandableStartButton(
     onAction: (GameType, String, String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedGameType by remember { mutableStateOf<GameType?>(null)}
     var whiteName by remember { mutableStateOf("") }
     var blackName by remember { mutableStateOf("") }
 

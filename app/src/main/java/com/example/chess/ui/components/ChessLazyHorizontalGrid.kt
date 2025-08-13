@@ -44,10 +44,8 @@ fun Piece(piece: ChessPiece?) {
         PieceType.ROOK -> if (piece.color == PieceColor.WHITE) R.drawable.chess_rlt60 else R.drawable.chess_rdt60
         PieceType.QUEEN -> if (piece.color == PieceColor.WHITE) R.drawable.chess_qlt60 else R.drawable.chess_qdt60
         PieceType.KING -> if (piece.color == PieceColor.WHITE) R.drawable.chess_klt60 else R.drawable.chess_kdt60
-        else -> null
     }
 
-    //TODO finish up with the spacing theory cooralate here and then find whether the check on this piece is valid or not if not find a new way for it to be able to be put into check
 
     if (imageId != null) {
         Box {

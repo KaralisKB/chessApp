@@ -1,7 +1,6 @@
 package com.example.chess.ui.history
 
-// import dev.chrisbanes.haze.hazeChild // Uncomment if you use this
-// import dev.chrisbanes.haze.BlurEffect // Uncomment if you use this
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -70,10 +69,6 @@ fun HistoryScreen(
 
     val tempGamesList by viewModel.gamesList.collectAsState()
     val gamesList = tempGamesList.reversed()
-
-    // TODO: hook up db data to the cards
-    // TODO: make the cards look nicer with the data
-    // TODO: maybe find some icons for the game type in middle
 
     val itemHeightPx = with(density) { ITEM_HEIGHT_DP.toPx() }
     val spacerHeightPx = with(density) { SPACER_HEIGHT_DP.toPx() }

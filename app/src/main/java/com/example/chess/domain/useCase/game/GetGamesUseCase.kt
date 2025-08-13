@@ -2,7 +2,6 @@ package com.example.chess.domain.useCase.game
 
 import com.example.chess.domain.repository.GameRepo
 import com.example.chess.domain.useCase.FlowUseCase
-import com.example.chess.local.model.Action
 import com.example.chess.local.model.Game
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

@@ -25,10 +25,7 @@
                 android:name="android.max_aspect"
                 android:value="2.4"/>
         </activity>
-        <activity android:name=".TestActivity"
-            android:exported="true">
 
-        </activity>
         <receiver
             android:name=".HelloWorldWidgetReceiver"
             android:exported="true"

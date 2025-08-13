@@ -1,17 +1,14 @@
 package com.example.chess.local.model
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chess.ui.components.ChessPiece
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @Suppress("UNUSED_EXPRESSION")
@@ -22,8 +19,8 @@ data class BoardState(
         CoroutineScope(Dispatchers.Default + CoroutineName("BoardStateScope"))
     val killedWhitePieces = mutableListOf<ChessPiece?>()
     val killedBlackPieces = mutableListOf<ChessPiece?>()
-    var whiteKing by mutableStateOf<ChessPiece?>(null)
-    var blackKing by mutableStateOf<ChessPiece?>(null)
+    private var whiteKing by mutableStateOf<ChessPiece?>(null)
+    private var blackKing by mutableStateOf<ChessPiece?>(null)
 
     init {
         board[0][0] = Rook(PieceColor.WHITE, Position(0, 0, FieldState.EMPTY)) // A1

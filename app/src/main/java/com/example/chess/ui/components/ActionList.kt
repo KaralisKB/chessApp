@@ -408,10 +408,3 @@ fun formatTime(millis: Long): String {
     return String.format("%02d:%02d", minutes, seconds)
 }
 
-fun getElapsedTime(eventTimeMillis: Long, startOfGameTime: Long): String {
-    val elapsed = eventTimeMillis - startOfGameTime
-    val seconds = (elapsed / 1000) % 60
-    val minutes = (elapsed / 1000) / 60
-    return String.format("%02d:%02d", minutes, seconds)
-}
-

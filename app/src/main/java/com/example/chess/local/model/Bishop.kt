@@ -44,6 +44,7 @@ class Bishop(override val color: PieceColor, startPosition: Position) : ChessPie
                         skippedPosition != null && skippedPosition.row == move.first && skippedPosition.col == move.second -> {
                             possibleMoves.add(Position(move, FieldState.VALID))
                         }
+
                         isValid == 1 -> possibleMoves.add(Position(move, FieldState.VALID))
                         isValid == 2 -> {
                             possibleMoves.add(Position(move, FieldState.ATTACK))

@@ -8,17 +8,20 @@ import com.example.chess.local.model.ActionType
 import com.example.chess.ui.components.PieceColor
 import com.example.chess.ui.components.PieceType
 
-@Entity(tableName = "actions", foreignKeys = [
-    ForeignKey(
-        entity = GameEntity::class,
-        parentColumns = ["gameId"],
-        childColumns = ["gameId"],
-        onDelete = ForeignKey.CASCADE
-    )],
+@Entity(
+    tableName = "actions", foreignKeys = [
+        ForeignKey(
+            entity = GameEntity::class,
+            parentColumns = ["gameId"],
+            childColumns = ["gameId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
     indices = [
         Index(value = ["gameId"])
-    ])
-data class ActionEntity (
+    ]
+)
+data class ActionEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val gameId: Int,
     val turnId: Int,
@@ -35,4 +38,4 @@ data class ActionEntity (
     val promotedPieceType: PieceType? = null,
     val castleIsLong: Boolean? = null,
     val colorInCheck: PieceColor? = null
-    )
+)
